@@ -121,7 +121,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>Just because there is no error message doesn’t mean everything went smoothly. You should be regularly printing out your objects, to see they contain the information and format that you expect.</p>
 <p>For example, if you have an object named <code>my_thing</code>, you might first want to simply look at the object by typing its name.</p>
 <p>However, you might also want to make sure it is the right <strong>object type</strong> and/or the right <strong>object structure</strong>.</p>
-<div id="cell-2" class="cell" data-execution_count="5">
+<div id="cell-2" class="cell" data-execution_count="1">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="bu">type</span>(my_thing)</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="bu">len</span>(my_thing)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-error">
@@ -130,7 +130,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <span class="ansi-red-fg ansi-bold">NameError</span>                                 Traceback (most recent call last)
 
-Cell <span class="ansi-green-fg ansi-bold">In[5], line 1</span>
+Cell <span class="ansi-green-fg ansi-bold">In[1], line 1</span>
 
 <span class="ansi-green-fg ansi-bold">----&gt; 1</span> <span style="color:rgb(0,135,0)">type</span>(<span class="ansi-yellow-bg">my_thing</span>)
 
@@ -150,7 +150,7 @@ Cell <span class="ansi-green-fg ansi-bold">In[5], line 1</span>
 <ol type="1">
 <li>Create lists containing the upper case letters, lower case letters, and some punctuation marks.</li>
 </ol>
-<div id="cell-4" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;,&quot;height&quot;:143}}" data-outputid="4ed6b62e-bd9b-41a0-831e-efc52b595226">
+<div id="cell-4" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;colab&quot;,&quot;value&quot;:{&quot;base_uri&quot;:&quot;https://localhost:8080/&quot;,&quot;height&quot;:143}}" data-outputid="4ed6b62e-bd9b-41a0-831e-efc52b595226" data-execution_count="6">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>lower_case <span class="op">=</span> [<span class="st">"a"</span>, <span class="st">"b"</span>, <span class="st">"c"</span>, <span class="st">"d"</span>, <span class="st">"e"</span>, <span class="st">"f"</span>, <span class="st">"g"</span>, <span class="st">"h"</span>, <span class="st">"i"</span>, <span class="st">"j"</span>, <span class="st">"k"</span>, <span class="st">"l"</span>, <span class="st">"m"</span>, <span class="st">"n"</span>, <span class="st">"o"</span>, <span class="st">"p"</span>, <span class="st">"q"</span>, <span class="st">"r"</span>, <span class="st">"s"</span>, <span class="st">"t"</span>, <span class="st">"u"</span>, <span class="st">"v"</span>, <span class="st">"w"</span>, <span class="st">"x"</span>, <span class="st">"y"</span>, <span class="st">"z"</span>]</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>upper_case <span class="op">=</span> [<span class="st">"A"</span>, <span class="st">"B"</span>, <span class="st">"C"</span>, <span class="st">"D"</span>, <span class="st">"E"</span>, <span class="st">"F"</span>, <span class="st">"G"</span>, <span class="st">"H"</span>, <span class="st">"I"</span>, <span class="st">"J"</span>, <span class="st">"K"</span>, <span class="st">"L"</span>, <span class="st">"M"</span>, <span class="st">"N"</span>, <span class="st">"O"</span>, <span class="st">"P"</span>, <span class="st">"Q"</span>, <span class="st">"R"</span>, <span class="st">"S"</span>, <span class="st">"T"</span>, <span class="st">"U"</span>, <span class="st">"V"</span>, <span class="st">"W"</span>, <span class="st">"X"</span>, <span class="st">"Y"</span>, <span class="st">"Z"</span>]</span>
@@ -160,7 +160,7 @@ Cell <span class="ansi-green-fg ansi-bold">In[5], line 1</span>
 <ol start="2" type="1">
 <li>Make one long list containing all the symbols. Find the length of this list.</li>
 </ol>
-<div id="cell-6" class="cell">
+<div id="cell-6" class="cell" data-execution_count="7">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>all_symbols <span class="op">=</span> lower_case <span class="op">+</span> upper_case <span class="op">+</span> punctuation</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="bu">len</span>(all_symbols)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -171,7 +171,7 @@ Cell <span class="ansi-green-fg ansi-bold">In[5], line 1</span>
 <ol start="3" type="1">
 <li>Repeat the previous steps, but instead of using <em>list</em> type objects, use <strong>numpy arrays</strong>. Don’t forget to <strong>import</strong> the numpy library!</li>
 </ol>
-<div id="cell-8" class="cell" data-execution_count="6">
+<div id="cell-8" class="cell" data-execution_count="8">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>lower_case <span class="op">=</span> np.array([<span class="st">"a"</span>, <span class="st">"b"</span>, <span class="st">"c"</span>, <span class="st">"d"</span>, <span class="st">"e"</span>, <span class="st">"f"</span>, <span class="st">"g"</span>, <span class="st">"h"</span>, <span class="st">"i"</span>, <span class="st">"j"</span>, <span class="st">"k"</span>, <span class="st">"l"</span>, <span class="st">"m"</span>, <span class="st">"n"</span>, <span class="st">"o"</span>, <span class="st">"p"</span>, <span class="st">"q"</span>, <span class="st">"r"</span>, <span class="st">"s"</span>, <span class="st">"t"</span>, <span class="st">"u"</span>, <span class="st">"v"</span>, <span class="st">"w"</span>, <span class="st">"x"</span>, <span class="st">"y"</span>, <span class="st">"z"</span>])</span>
@@ -186,7 +186,7 @@ Cell <span class="ansi-green-fg ansi-bold">In[5], line 1</span>
 <ol start="4" type="1">
 <li>Make a <strong>pandas data frame</strong>, with one column called “Symbol” containing the <code>all_symbols</code> array.</li>
 </ol>
-<div id="cell-10" class="cell" data-execution_count="7">
+<div id="cell-10" class="cell" data-execution_count="9">
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>symbols_df <span class="op">=</span> pd.DataFrame(all_symbols)</span>
@@ -258,7 +258,7 @@ Cell <span class="ansi-green-fg ansi-bold">In[5], line 1</span>
 </section>
 <section id="part-two-decoding-the-secret-message." class="level2">
 <h2 class="anchored" data-anchor-id="part-two-decoding-the-secret-message.">Part Two: Decoding the secret message.</h2>
-<div id="cell-12" class="cell" data-execution_count="32">
+<div id="cell-12" class="cell" data-execution_count="10">
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>top_secret <span class="op">=</span> pd.read_csv(<span class="st">"https://www.dropbox.com/s/k72h1zewk4gtqep/PA_Secret_Code?dl=1"</span>, header<span class="op">=</span><span class="va">None</span>)</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>top_secret <span class="op">=</span> top_secret[<span class="dv">0</span>].to_numpy()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -297,25 +297,25 @@ Cell <span class="ansi-green-fg ansi-bold">In[5], line 1</span>
 <section id="part-3-the-secret-message" class="level2">
 <h2 class="anchored" data-anchor-id="part-3-the-secret-message">Part 3: The secret message!</h2>
 <p>Run the following to discover the final message! Google the first line of this message, if you do not recognize it, to see what it is.</p>
-<div id="cell-14" class="cell" data-execution_count="33">
+<div id="cell-14" class="cell" data-execution_count="11">
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 1 -5 </span></span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>top_secret_new <span class="op">=</span> top_secret <span class="op">+</span> <span class="dv">14</span></span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>top_secret_new <span class="op">=</span> top_secret_new <span class="op">*</span> <span class="dv">18</span> <span class="op">-</span> <span class="dv">257</span></span>
 <span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>top_secret_new <span class="op">=</span> np.exp(top_secret_new)</span>
 <span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>top_secret_new <span class="op">=</span> top_secret_new <span class="op">**</span> <span class="dv">2</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="cell-15" class="cell" data-execution_count="34">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>top_secret_matrix <span class="op">=</span> top_secret_new.reshape(<span class="op">-</span><span class="dv">1</span>,<span class="dv">5</span>)</span>
+<div id="cell-15" class="cell" data-execution_count="12">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>top_secret_matrix <span class="op">=</span> top_secret_new.reshape(<span class="op">-</span><span class="dv">1</span>,<span class="dv">5</span>, order <span class="op">=</span> <span class="st">'F'</span>)</span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>evens <span class="op">=</span> np.arange(<span class="dv">2</span>,<span class="dv">384</span>,<span class="dv">2</span>)</span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="cell-16" class="cell" data-execution_count="35">
+<div id="cell-16" class="cell" data-execution_count="13">
 <div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>top_secret_matrix[:, <span class="dv">0</span>] <span class="op">=</span> top_secret_matrix[:, <span class="dv">0</span>] <span class="op">-</span> evens</span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>top_secret_matrix[<span class="dv">17</span>:<span class="dv">24</span>, <span class="dv">2</span>] <span class="op">-=</span> <span class="dv">100</span></span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>top_secret_matrix[:, <span class="dv">3</span>:<span class="dv">5</span>] <span class="op">*=</span> <span class="dv">2</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="cell-17" class="cell" data-execution_count="38">
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>one_d_array <span class="op">=</span> top_secret_matrix.flatten(order<span class="op">=</span><span class="st">'F'</span>)</span>
+<div id="cell-17" class="cell" data-execution_count="14">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>one_d_array <span class="op">=</span> top_secret_matrix.reshape(<span class="op">-</span><span class="dv">1</span>, order<span class="op">=</span><span class="st">'F'</span>)</span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>subset <span class="op">=</span> one_d_array[<span class="dv">500</span>:]</span>
 <span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a></span>
@@ -323,27 +323,30 @@ Cell <span class="ansi-green-fg ansi-bold">In[5], line 1</span>
 <span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(check)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>False</code></pre>
+<pre><code>True</code></pre>
 </div>
 </div>
-<div id="cell-18" class="cell">
+<div id="cell-18" class="cell" data-execution_count="17">
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>one_d_array[<span class="dv">37</span>:<span class="dv">465</span>] <span class="op">=</span> np.sqrt(one_d_array[<span class="dv">37</span>:<span class="dv">465</span>])</span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>one_d_array <span class="op">=</span> np.<span class="bu">round</span>(one_d_array, <span class="dv">0</span>)</span>
 <span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>one_d_array[one_d_array <span class="op">==</span> <span class="dv">39</span>] <span class="op">=</span> <span class="dv">20</span></span>
 <span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="co"># my answers are off because i cant seem to get the 500 indicies and beyond </span></span>
-<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="co"># to be less than 100, but i finished out the rest of the problem and think </span></span>
-<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="co"># that work is correct </span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>even_count <span class="op">=</span> <span class="bu">sum</span>(<span class="dv">1</span> <span class="cf">for</span> num <span class="kw">in</span> one_d_array <span class="cf">if</span> num <span class="op">%</span> <span class="dv">2</span> <span class="op">==</span> <span class="dv">0</span>)</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Number of even numbers: </span><span class="sc">{</span>even_count<span class="sc">}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Number of even numbers: 461</code></pre>
 </div>
-<div id="cell-19" class="cell" data-execution_count="29">
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co">''</span>.join(<span class="bu">map</span>(<span class="bu">str</span>, symbols_df.loc[top_secret<span class="op">-</span><span class="dv">1</span>][<span class="st">'Symbol'</span>]))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-19" class="cell">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-error">
 <div class="ansi-escaped-output">
 <pre><span class="ansi-red-fg ansi-bold">---------------------------------------------------------------------------</span>
 
 <span class="ansi-red-fg ansi-bold">KeyError</span>                                  Traceback (most recent call last)
 
-Cell <span class="ansi-green-fg ansi-bold">In[29], line 1</span>
+Cell <span class="ansi-green-fg ansi-bold">In[16], line 1</span>
 
 <span class="ansi-green-fg ansi-bold">----&gt; 1</span> <span style="color:rgb(175,0,0)">'</span><span style="color:rgb(175,0,0)">'</span><span style="color:rgb(98,98,98)">.</span>join(<span style="color:rgb(0,135,0)">map</span>(<span style="color:rgb(0,135,0)">str</span>, <span class="ansi-yellow-bg">symbols_df</span><span style="color:rgb(98,98,98)" class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">loc</span><span class="ansi-yellow-bg">[</span><span class="ansi-yellow-bg">top_secret</span><span style="color:rgb(98,98,98)" class="ansi-yellow-bg">-</span><span style="color:rgb(98,98,98)" class="ansi-yellow-bg">1</span><span class="ansi-yellow-bg">]</span>[<span style="color:rgb(175,0,0)">'</span><span style="color:rgb(175,0,0)">Symbol</span><span style="color:rgb(175,0,0)">'</span>]))
 
