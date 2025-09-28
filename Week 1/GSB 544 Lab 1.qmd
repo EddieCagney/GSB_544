@@ -1,0 +1,241 @@
+---
+title: "GSB 544 Lab 1"
+author: "Eddie Cagney"
+format: html
+editor: source
+embed-resources: true
+code-fold: true
+execute: 
+  echo: true
+  error: true
+  message: false
+  warning: false
+---
+
+```{python}
+import pandas as pd
+
+q1_path = "C:/Users/Eddie/Documents/GSB 544/Data/q1data.csv"
+q2_path = "C:/Users/Eddie/Documents/GSB 544/Data/q2data.csv"
+q3_path = "C:/Users/Eddie/Documents/GSB 544/Data/q3data.csv"
+
+q1_data = pd.read_csv(q1_path)
+q2_data = pd.read_csv(q2_path)
+q3_data = pd.read_csv(q3_path)
+
+```
+
+## Task 1
+1) The aesthetics being used in this plot are Income as the x-axis, life expectancy as the y-axis and fill based on country. Both the x and the y are scaled in a specific way (Income is exponential and Life Expectancy is by 10). Each observation is also weighted by population. 
+
+2)
+Cleaned Data (Imported Above)
+```{python}
+q1_data_clean = q1_data.dropna(subset=["four_regions"])
+q1_data_clean['four_regions'] = q1_data_clean['four_regions'].replace({'africa': 'Africa', 'americas': 'Americas', 'asia': 'Asia', 'europe': 'Europe'})
+```
+
+3)
+Creating Graph
+```{python}
+from plotnine import *
+   
+region_colors = {
+    "Asia": "#E31A1C",    
+    "Europe": "#FDBF00",
+    "Americas": "#33A02C",
+    "Africa": "#1F78B4",
+}
+
+income_breaks = [500, 1000, 2000, 4000, 8000, 16000, 32000, 64000]
+income_labels = ['500','1000','2000','4000','8000','16k','32k','64k']
+
+(ggplot(q1_data_clean,
+aes(x = "income",
+y = "life_exp",))
++ geom_point(aes(size = "population", fill = "four_regions"),
+alpha = 1,
+stroke=0.15,
+color='black')
++ scale_fill_manual(values=region_colors)
++ scale_size_area(max_size= 12)
++ scale_x_log10(breaks = income_breaks, labels = income_labels, limits=(500, 64000))
++ scale_y_continuous(limits = (20, 90), breaks = [20,30,40,50,60,70,80,90])
++ guides(size=False)
++ labs(x="Income (GDP Per Capita)", y="Life Expectancy (Years)", fill="World Regions"
+)
++ annotate('text', x=6000, y=50, label='2010', size=120, alpha=0.08, color='gray')
++ theme(figure_size= (8,3))
+)
+
+```
+
+4) 
+Another Geometry that could work to visualize this data is a 2d desnity chart. This would allow us to see the same patterns of Income and Life expectency while still allowing us to differentiate by world region. The disadvanage to this graph is that it is much less intuititve to what the data is saying about the population size, but it still gives us valid trends.
+
+```{python}
+(ggplot(q1_data_clean,
+aes(x = "income",
+y = "life_exp",
+color = "four_regions"))
++ geom_density_2d(aes(weight="population"))
++ scale_color_manual(values=region_colors)
++ scale_x_log10(breaks = income_breaks, labels = income_labels, limits=(500, 64000))
++ scale_y_continuous(limits = (20, 90), breaks = [20,30,40,50,60,70,80,90])
++ guides(size=False)
++ labs(x="Income (GDP Per Capita)", y="Life expectancy (Years)", color="World Regions"
+)
++ annotate('text', x=6000, y=50, label='2010', size=110, alpha=0.08, color='gray')
++ theme(figure_size= (8,3))
+)
+    
+```
+
+## Task 2
+
+1) In this graph the aesthetics are mapped as exports on the x-axis, important on the y-axis. The geometry being used is geom_point (scatterplot) with the size of each point being determined by their given energy use. 
+
+2) 
+Cleaning q2 Data
+
+```{python}
+q2_data_clean = q2_data.dropna(subset=["four_regions"])
+
+def lame_values(val):
+    if isinstance(val, str) and val.endswith("k"):
+        return float(val[:-1]) * 1000
+    return float(val)
+
+q2_data_clean['energy'] = q2_data_clean['energy'].apply(lame_values)
+q2_data_clean['four_regions'] = q2_data_clean['four_regions'].replace({'africa': 'Africa', 'americas': 'Americas', 'asia': 'Asia', 'europe': 'Europe'})
+```
+
+
+3) 
+
+```{python}
+(ggplot(q2_data_clean,
+aes(x = "exports",
+y = "imports"))
++ geom_point(aes(size = "energy", fill = "four_regions"),
+alpha = 1,
+stroke = 0.15,
+color = 'black')
++ scale_fill_manual(values=region_colors)
++ scale_size_area(max_size=12)
++ scale_x_continuous(limits = [0, 220], breaks = [20,40,60,80,100,120,140,160, 180, 200, 220])
++ scale_y_continuous(limits = [0, 450], breaks = [50,100,150,200,250,300,350,400])
++ guides(size=False)
++ labs(x="Exports (% of GDP)", y="Imports (% of GDP)", fill="World Regions"
+)
++ annotate('text', x=120, y=225, label='1997', size=110, alpha=0.08, color='gray')
++ theme(figure_size= (8,3))
+)
+
+```
+
+4)
+Another geometry that could be used for this plot could be geom_jitter. We see a lot of overplotting in the bottom left of our graph and this could help with trend visualization. Although it doesn't appear to be changing much in our plot.
+
+
+```{python}
+(ggplot(q2_data_clean,
+aes(x = "exports",
+y = "imports"))
++ geom_jitter(aes(size = "energy", fill = "four_regions"),
+alpha = 1,
+stroke = 0.15,
+color = 'black')
++ scale_fill_manual(values=region_colors)
++ scale_size_area(max_size=12)
++ scale_x_continuous(limits = [0, 220], breaks = [20,40,60,80,100,120,140,160, 180, 200, 220])
++ scale_y_continuous(limits = [0, 450], breaks = [50,100,150,200,250,300,350,400])
++ guides(size=False)
++ labs(x="Exports (% of GDP)", y="Imports (% of GDP)", fill="World Regions"
+)
++ annotate('text', x=120, y=225, label='1997', size=110, alpha=0.08, color='gray')
++ theme(figure_size= (8,3))
+)
+```
+
+## Task 3
+
+1) In this plot, we are able to see that the aesthetics being mapped are individuals using the internet on the x-axis (internet_users) and GDP/Capita on the y-axis (gdp). The graph is colored/filled based off of four_regions and the size of the bubbles/points are based off of income. 
+
+2) Cleaning Data
+
+```{python}
+q3_data_clean = q3_data.dropna(subset=["four_regions"])
+
+q3_data_clean['four_regions'] = q3_data_clean['four_regions'].replace({'africa': 'Africa', 'americas': 'Americas', 'asia': 'Asia', 'europe': 'Europe'})
+```
+
+3)
+
+```{python}
+(ggplot(q3_data_clean,
+aes(x = "internet_users",
+y = "gdp"))
++ geom_point(
+  aes(size = "income", fill = 'four_regions'),
+  alpha = 1,
+  color = 'black',
+  stroke = 0.15)
++ scale_fill_manual(values=region_colors)
++ scale_size_area(max_size=12)
++ scale_x_continuous(limits = [0, 100], breaks = [10,20,30,40,50,60,70,80,90])
++ scale_y_log10(limits = [0, 200000], breaks = [200,500,1000,2000,5000,10000,20000,50000,100000], labels = ['200', '500', '1000', '2000', '5000', '10k', '20k', '50k', '100k'])
++ guides(size=False)
++ labs(x="Individuals using the Internet", y="GDP/Capita", fill="World Regions"
+)
++ annotate('text', x=50, y=3500, label='2001', size=110, alpha=0.08, color='gray')
++ theme(figure_size= (8,3))
+)
+```
+
+4) Another geometry that could be used here is geom_smooth, this allows us to see a linear trend of the data in a clearer way. However, as you can see from the plot below, there is no emphasis/size on the income variable. This is because geom_smooth shows linear trends and not weights like a bubble plot might.
+
+
+```{python}
+(ggplot(q3_data_clean,
+aes(x = "internet_users",
+y = "gdp"))
++ geom_smooth(
+  aes(color = "four_regions"))
++ scale_color_manual(values=region_colors)
++ scale_size_area(max_size=12)
++ scale_x_continuous(limits = [0, 100], breaks = [10,20,30,40,50,60,70,80,90])
++ scale_y_log10(limits = [200, 200000], breaks = [200,500,1000,2000,5000,10000,20000,50000,100000], labels = ['200', '500', '1000', '2000', '5000', '10k', '20k', '50k', '100k'])
++ guides(size=False)
++ labs(x="Individuals using the Internet", y="GDP/Capita", color="World Regions"
+)
++ annotate('text', x=50, y=3500, label='2001', size=110, alpha=0.08, color='gray')
++ theme(figure_size= (8,3))
+)
+```
+
+So, it would be best to use geom_point and geom_smooth together, this would give us all the same details from our original graph but also add another layer of linear trends (if any).
+
+
+```{python}
+(ggplot(q3_data_clean,
+aes(x = "internet_users",
+y = "gdp"))
++ geom_point(
+  aes(size = "income", fill = 'four_regions'),
+  alpha = 1,
+  color = 'black',
+  stroke = 0.15)
++ geom_smooth(aes(color = 'four_regions'), show_legend = False)
++ scale_fill_manual(values=region_colors)
++ scale_color_manual(values=region_colors)
++ scale_size_area(max_size=12)
++ scale_x_continuous(limits = [0, 100], breaks = [10,20,30,40,50,60,70,80,90])
++ scale_y_log10(limits = [0, 200000], breaks = [200,500,1000,2000,5000,10000,20000,50000,100000], labels = ['200', '500', '1000', '2000', '5000', '10k', '20k', '50k', '100k'])
++ guides(size=False)
++ labs(x="Individuals using the Internet", y="GDP/Capita", fill="World Regions"
+)
++ annotate('text', x=50, y=3500, label='2001', size=110, alpha=0.08, color='gray')
++ theme(figure_size= (8,3))
+)
+```
