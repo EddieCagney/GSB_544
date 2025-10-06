@@ -1,0 +1,241 @@
+---
+title: "GSB 544 Lab 2"
+author: "Eddie Cagney"
+format: html
+embed-resources: true
+code-fold: true
+editor: source
+execute: 
+  echo: true
+  error: true
+  message: false
+  warning: false
+---
+
+
+```{python}
+import pandas as pd
+import numpy as np
+
+avocado_data = pd.read_csv("C:/Users/Eddie/Documents/GSB 544/Data/avocado-updated-2020.csv")
+```
+
+1. 1. This dataset contains the information regaurding the prices of Avocados in 2020, the price of the avocado the day the data was gathered. As well as other variables like the average avocado price, type (conventional or organic), year, region where the avocados are from the total number of avocados that were sold and the number of avocados sold that had a certain "product look up code" which represents the size of the avocados. The `region` variable seems to have multiple different kinds of values that would overlap, for example: Los Angeles and California
+
+2. Cleaning (Created New Variable `major_region` to depict the major regions that were counted/focused on when gathering the data, these include California, Great Lakes, Mid South, North East, Southeast, South Central and West. Also, I renamed the code for each product to describe the type of avocado - Small, Large, and Xlarge)
+```{python}
+avocado_data["date"] = pd.to_datetime(avocado_data["date"], format="%Y-%m-%d")
+avocado_clean = avocado_data.rename(columns= {
+    '4046':'small/medium',
+    '4225':'large',
+    '4770':'extra_large'})
+
+avocado_clean['major_region'] = 1 * (
+    (avocado_clean['geography'] == 'California') |
+    (avocado_clean['geography'] == 'Great Lakes') |
+    (avocado_clean['geography'] == 'Midsouth') |
+    (avocado_clean['geography'] == 'Northeast') |
+    (avocado_clean['geography'] == 'Southeast') |
+    (avocado_clean['geography'] == 'South Central') |
+    (avocado_clean['geography'] == 'West') |
+    (avocado_clean['geography'] == 'Plains')
+)
+
+```
+
+Number of unique distinct regions in entire data:
+```{python}
+len(avocado_clean['geography'].unique())
+```
+
+
+# Exercises 
+3)
+
+```{python}
+major_2017 = avocado_clean.loc[
+    (avocado_clean['major_region'] == 1) &
+    (avocado_clean['year'] == 2017)]
+
+major_2017 = major_2017.loc[
+    (major_2017['small/medium'] == max(major_2017['small/medium']))
+]
+
+print(major_2017['geography'])
+```
+The major region that sold the most amount of small Has avocados in 2017 was South Central.
+
+4)
+
+```{python}
+avocado_clean['year'] = avocado_clean['date'].dt.year
+avocado_clean['month'] = avocado_clean['date'].dt.month
+avocado_clean['day'] = avocado_clean['date'].dt.day
+```
+
+
+```{python}
+pd.set_option('display.float_format', '{:.2f}'.format)
+
+df_major = avocado_clean.loc[
+    avocado_clean['major_region'] == 1]
+
+
+df_major[['total_volume', 'month']].groupby('month').mean()
+```
+May has the highest average total volume in avocado sales.
+
+Trying it with total US and expecting to get same result.
+
+```{python}
+df_totalUS = avocado_clean.loc[
+    avocado_clean['geography'] == 'Total U.S.']
+
+df_totalUS[['total_volume', 'month']].groupby('month').mean()
+
+```
+May has the highest number of average total sales volume when using one geography as `Total_U.S.` which is composed of the regions used above.
+
+5)
+To approach this problem, I will first find the five regions with the highest averages for the total_volume variable. Then I will filter based on those regions, then construct a plot with all the observations from those regions.
+
+```{python}
+df_major[['total_volume', 'geography']].groupby('geography').mean().sort_values(by = 'total_volume', ascending=False)
+```
+Found that the regions with the highest average for `total_volume` are: West, South Central, California, Northeast, Southeast.
+
+
+```{python}
+from plotnine import *
+df_highest = df_major.loc[
+    (df_major['geography'] == 'West') |
+    (df_major['geography'] == 'South Central') |
+    (df_major['geography'] == 'California') |
+    (df_major['geography'] == 'Northeast') |
+    (df_major['geography'] == 'Southeast')
+    ]
+
+(ggplot(df_highest,
+aes(
+    x = 'geography',
+    y = 'total_volume'
+    ))
+    + geom_boxplot()
+    + geom_jitter(aes(color = 'geography'), width = 0, height = 0.2, alpha =0.1)
+    + scale_y_log10()
+    + labs(
+        x = 'Geography',
+        y = 'Total Volume',
+        color = 'Geography')
+    )
+```
+
+6)
+
+```{python}
+df_cali = avocado_clean.loc[
+    (avocado_clean['geography'] == 'Los Angeles') |
+    (avocado_clean['geography'] == 'San Diego') |
+    (avocado_clean['geography'] == 'San Francisco') |
+    (avocado_clean['geography'] == 'Sacramento')]
+
+df_cali['geography'].unique()
+
+```
+
+7) 
+To make answering this question easier, its best to pivot the data into a wider format using type as their own columns. However, there isn't any "identifier" column for each observation, that would prevent us from pivoting normally due to duplicates. So instead, we need to use a pivot_table to extract the mean average price for the given type, based on region. From there we can subtract the average prices between types to give us the difference in the averages based on region.
+
+```{python}
+cali_wide_mean = df_cali.pivot_table(index = 'geography', columns = 'type', values = 'average_price', aggfunc='mean')
+
+cali_wide_mean['difference'] = cali_wide_mean['conventional'] - cali_wide_mean['organic']
+
+print(cali_wide_mean['difference'])
+
+(ggplot(df_cali,
+aes(
+    x = 'geography',
+    y = 'average_price',
+    fill = 'type'
+    ))
+    + geom_boxplot()
+    + scale_y_continuous(breaks = [0.25,0.5,0.75,1,1.25,1.5,1.75,2,2,2.25,2.5,2.75,3,3.25,3.5])
+    + labs(
+        x = 'Geography',
+        y = 'Average Price',
+        fill = 'Type')
+    )
+```
+We are able to see that San Francisco has the greatest difference in average price between conventional and organic avocados with a the difference in the averages coming out to be that conventional are on average 72 cents cheaper. 
+In the side-by-side boxplot, these differences are a little harder to spot because they are small. We can tell that there is only a slight difference between San Francisco/San Diego types and also Los Angeles/Sacramento but a larger difference between SF & SD vs. LA & Sac.
+
+8)
+
+```{python}
+df_cali_long = df_cali.melt(id_vars = ['geography', 'type'], value_vars= ['small/medium', 'large', 'extra_large'], var_name = 'size', value_name = 'units_sold')
+```
+
+```{python}
+cali_longer = df_cali_long[['units_sold','geography', 'type', 'size']].groupby(['geography', 'type', 'size']).sum().reset_index()
+
+```
+```{python}
+(ggplot(cali_longer,
+aes(x = "geography", weight = 'units_sold'))
++ geom_bar(
+  aes(fill = "size"),
+  position="fill")
++ scale_y_continuous(breaks = [0, 0.25, 0.5, 0.75, 1], labels = ['0%', '25%', '50%', '75%', '100%'])
++ labs(
+    title = "Proportion of Average Hass Avocado Sales by Size",
+    x="Region of California",
+    y="Proportion",
+    fill="size"
+)
++ facet_wrap('type')
++ theme_bw()
++ theme(axis_text_x = element_text(rotation=45))
+)
+```
+
+# Outside Data
+
+```{python}
+real_data = pd.read_csv("C:/Users/Eddie/Documents/GSB 544/Data/realtor-data.zip.csv")
+
+real_data = real_data.loc[
+    (real_data['city'] == 'San Francisco') |
+    (real_data['city'] == 'Sacramento') |
+    (real_data['city'] == 'Los Angeles') |
+    (real_data['city'] == 'San Diego'), ['city', 'price']
+]
+
+real_data = real_data.rename(columns= {
+    'city' : 'geography'})
+
+```
+
+
+```{python}
+combined = df_cali.merge(real_data, on = ['geography'], how = 'outer')
+
+combined[['geography', 'price', 'average_price']].groupby('geography').mean()
+```
+
+As we can see from the chart and the graph below. As the price of avocados increase, the price of homes actually decreases in California. With these results, we can make the argument that the reason that Millennials cannot afford homes does not have to do with the prices of avocados/spending too much on avocados. This wouldn't be the case because it would mean that in places with higher avocado prices, homes would be able to be afforded by Millennials more, which is not the case. 
+
+```{python}
+(ggplot(combined,
+aes(
+    x = "average_price",
+    y = 'price'))
++ geom_smooth()
++ labs(
+    title = "California Avocado Prices by California House Prices",
+    x="Avocado Prices",
+    y="House Prices"
+)
++ theme_bw()
+)
+```
