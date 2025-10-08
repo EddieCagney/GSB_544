@@ -1,11 +1,12 @@
 ---
 title: "GSB 544 Lab 2"
 author: "Eddie Cagney"
-format: html
-embed-resources: true
-code-fold: true
+format:
+  html:
+    embed-resources: true
+    code-fold: true
 editor: source
-execute: 
+execute:
   echo: true
   error: true
   message: false
