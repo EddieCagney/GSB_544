@@ -1,0 +1,90 @@
+---
+title: "API Practice"
+format: html
+---
+
+```{python}
+import pandas as pd
+```
+
+```{python}
+import requests
+
+url = "https://tasty.p.rapidapi.com/recipes/list"
+
+querystring = {"from":"0","size":"20","q":"daikon"}
+
+headers = {
+	"x-rapidapi-key": "10bff72081msh0d8b0bbdb700e4ap1d07bfjsn04ddcf3e4d60",
+	"x-rapidapi-host": "tasty.p.rapidapi.com"
+}
+
+response = requests.get(url, headers=headers, params=querystring)
+
+print(response.json())
+```
+
+```{python}
+daikon_recipes = pd.json_normalize(response.json(), "results")
+daikon_recipes
+```
+
+
+```{python}
+
+import requests
+response = requests.get("https://statistics.calpoly.edu/content/directory")
+
+from bs4 import BeautifulSoup
+soup = BeautifulSoup(response.content, "html.parser")
+
+```
+
+
+```{python}
+table = soup.find_all('table')[1]
+
+table.find_all('tr')[1:]
+```
+
+
+```{python}
+# initialize an empty list
+rows = []
+
+# iterate over all rows in the faculty table
+for faculty in table.find_all("tr")[1:]:
+
+    # Get all the cells (<td>) in the row.
+    cells = faculty.find_all("td")
+
+    # The information we need is the text between tags.
+
+    # Find the the name of the faculty in cell[0]
+    # which for most faculty is contained in the <strong> tag
+    name_tag = cells[0].find("strong") or cells[0]
+    name = name_tag.text
+
+    # Find the office of the faculty in cell[1]
+    # which for most faculty is contained in the <a> tag
+    link = cells[1].find("a") or cells[1]
+    office = link.text
+
+    # Find the email of the faculty in cell[3]
+    # which for most faculty is contained in the <a> tag
+    email_tag = cells[3].find("a") or cells[3]
+    email = email_tag.text
+
+    phone = cells[2].find("td") or cells[2]
+    phone = phone.text
+
+    # Append this data.
+    rows.append({
+        "name": name,
+        "office": office,
+        "email": email,
+        "phone": phone
+    })
+
+pd.DataFrame(rows)
+```
