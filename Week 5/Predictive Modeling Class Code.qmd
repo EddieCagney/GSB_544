@@ -1,0 +1,77 @@
+---
+title: "Week 5 Class Examples"
+format: html
+---
+
+
+```{python}
+import sklearn
+import pandas as pd
+import numpy as np
+```
+
+
+```{python}
+dat = pd.read_csv("https://www.dropbox.com/scl/fi/yf8t1x0uvrln93dzi6xd8/housing_small.csv?rlkey=uen32y937kqarrjra0v6jaez4&dl=1")
+```
+
+
+```{python}
+y = dat['SalePrice']
+X = dat[['Gr Liv Area', 'Bedroom AbvGr', 'Neighborhood_NAmes', 'Neighborhood_NWAmes']]
+```
+
+
+```{python}
+from sklearn.neighbors import KNeighborsRegressor
+from sklearn.tree import DecisionTreeRegressor
+from sklearn.linear_model import LinearRegression
+
+knn = KNeighborsRegressor()
+lr = LinearRegression()
+dt = DecisionTreeRegressor()
+```
+
+
+```{python}
+from sklearn.model_selection import train_test_split
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25)
+
+
+```
+
+
+```{python}
+lr_fit = lr.fit(X_train, y_train)
+dt_fit = dt.fit(X_train, y_train)
+knn_fit = knn.fit(X_train, y_train)
+```
+
+
+```{python}
+lr_fit.coef_
+```
+
+Getting predicted values of y and it spits out a numpy array
+```{python}
+y_pred_knn = knn_fit.predict(X_test)
+y_pred_lr = lr_fit.predict(X_test)
+y_pred_dt = dt_fit.predict(X_test)
+```
+
+
+```{python}
+from sklearn.metrics import mean_squared_error
+
+mean_squared_error(y_test, y_pred_knn)
+mean_squared_error(y_test, y_pred_lr)
+mean_squared_error(y_test, y_pred_dt)
+
+```
+
+
+```{python}
+final_model = lr.fit(X, y)
+final_model.coef_
+```
