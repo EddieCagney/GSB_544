@@ -1,0 +1,276 @@
+---
+title: "GSB 544 Lab 4"
+author: "Eddie Cagney"
+format:
+  html:
+    embed-resources: true
+    code-fold: true
+editor: source
+execute:
+  echo: true
+  error: true
+  message: false
+  warning: false
+---
+
+## Packages and Loading Data
+
+
+```{python}
+import requests
+from bs4 import BeautifulSoup
+import pandas as pd
+import re
+```
+
+```{python}
+URL = "https://tastesbetterfromscratch.com/meal-plan-210"
+HEADERS ={ "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)" }
+
+
+# get the html content
+response = requests.get(URL, headers = HEADERS)
+soup = BeautifulSoup(response.content, "html.parser")
+```
+
+Here I'm printing the first 500 indexes in file to show that it works.
+```{python}
+file = soup.find("article") or soup
+print(str(file)[:500])
+
+```
+
+# 1
+```{python}
+rows = []
+
+for p in file.find_all("p"):
+    strong = p.get_text(" ", strip = True)
+    day = re.findall(r"^\s*(Monday|Tuesday|Wednesday|Thursday|Friday)", strong)
+    if not day:
+        continue
+    
+    a = p.find("a", href=True)
+    if not (strong and a):
+        continue
+
+    day_of_week = day[0]
+    name = a.get_text(strip = True)
+    link = a['href']
+
+    price_recipe = re.findall(r"\$\d+(?:\.\d{2})?", strong)
+    price = price_recipe[0]
+
+
+    rows.append({
+        "Day of the Week": day_of_week,
+        "Name of Recipe": name,
+        "Link to Recipe": link,
+        "Price of Recipe": price
+    })
+
+df = pd.DataFrame(rows)
+print(df)
+```
+
+# 2
+```{python}
+url = "https://tasty.p.rapidapi.com/recipes/list"
+
+querystring = {"from":"0","size":"20","q":"Biscuit Chicken Pot Pie"}
+
+headers = {
+	"x-rapidapi-key": "10bff72081msh0d8b0bbdb700e4ap1d07bfjsn04ddcf3e4d60",
+	"x-rapidapi-host": "tasty.p.rapidapi.com"
+}
+
+response = requests.get(url, headers=headers, params=querystring)
+
+```
+
+```{python}
+monday_recipes = pd.json_normalize(response.json(), "results")
+print(monday_recipes)
+print(f'The number of matching recipes is: {len(monday_recipes)}')
+```
+
+# 3
+
+```{python}
+def get_weekly_plan(num):
+    URL_auto = f"https://tastesbetterfromscratch.com/meal-plan-{num}"
+    HEADERS_auto ={ "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)" }
+    # get the html content
+    response_auto = requests.get(URL_auto, headers = HEADERS_auto)
+    soup_auto = BeautifulSoup(response_auto.content, "html.parser")
+    
+    file_auto = soup_auto.find("article") or soup_auto
+
+    rows = []
+    for p in file_auto.find_all("p"):
+        strong = p.get_text(" ", strip = True)
+        day = re.findall(r"^\s*(Monday|Tuesday|Wednesday|Thursday|Friday)", strong)
+        if not day:
+            continue
+        
+        a = p.find("a", href=True)
+        if not (strong and a):
+            continue
+        
+        day_of_week = day[0]
+        name = a.get_text(strip = True)
+        link = a['href']
+        
+        price_recipe = re.findall(r"\$\d+(?:\.\d{2})?", strong)
+        price = price_recipe[0]
+        
+        rows.append({
+            "Day of the Week": day_of_week,
+            "Name of Recipe": name,
+            "Link to Recipe": link,
+            "Price of Recipe": price
+            })
+            
+    df = pd.DataFrame(rows)
+    return(df)
+```
+
+Checking to see if `get_weekly_plan()` workds
+```{python}
+see = get_weekly_plan(210)
+```
+
+```{python}
+for name in see['Name of Recipe']:
+    recipe_name = name.strip()
+
+recipe_name
+```
+
+```{python}
+def match_recipe(name):
+    url = "https://tasty.p.rapidapi.com/recipes/list"
+    
+    querystring = {"from":"0","size":"20","q":f"{name}"}
+    
+    headers = {
+        "x-rapidapi-key": "10bff72081msh0d8b0bbdb700e4ap1d07bfjsn04ddcf3e4d60",
+        "x-rapidapi-host": "tasty.p.rapidapi.com"
+        }
+    
+    response = requests.get(url, headers=headers, params=querystring)
+
+    x = pd.json_normalize(response.json(), "results")
+    return(x)
+```
+
+Checking to See if `match_recipe()` function works
+```{python}
+check = match_recipe("Ground Beef Tacos")
+```
+
+
+Combining functions to create `get_meal_plan_data()` function
+
+```{python}
+def get_mealplan_data(num):
+    df = get_weekly_plan(num)
+
+    matches = []
+
+    for name in df['Name of Recipe']:
+        recipe_name = name.strip()
+        matches.append(len(match_recipe(recipe_name)))
+    
+    df['Matched Recipes'] = matches
+        
+
+    return(df)
+```
+
+Based on Dr. Ross's directions in discord I added the amount o recipes matched to another column in the dataset within the `get_mealplan_data()` function
+```{python}
+df = get_mealplan_data(202)
+```
+
+# 4
+Using `beef` and `chicken` as "non- vegetarian" titles.
+```{python}
+df["Vegetarian"] = df.apply(
+    lambda row: not bool(re.search(r"\b(beef|chicken)\b",
+                                   str(row["Name of Recipe"]),
+                                   flags=re.I)),
+    axis=1
+)
+```
+
+# 5
+
+```{python}
+def get_mealplan_data_and_nutrition(num):
+    df = get_weekly_plan(num)
+
+    matches = []
+    calories = []
+
+    for name in df['Name of Recipe']:
+        recipe_name = name.strip()
+        matched_recipes = match_recipe(recipe_name)
+        matches.append(len(matched_recipes))
+
+        #calories.append(matched_recipes['nutrition.fat'])
+
+        s = pd.to_numeric(
+            matched_recipes.get('nutrition.calories', pd.Series(dtype='float64')),
+            errors='coerce'
+        ).dropna()
+        calories.append(s.mean() if not s.empty else None)
+    
+    df['Matched Recipes'] = matches
+    df['Average Calories'] = calories
+
+
+    #calories = []
+
+        
+
+    return(df)
+```
+
+```{python}
+df_for_viz = get_mealplan_data_and_nutrition(202)
+```
+
+
+```{python}
+df_for_viz["Vegetarian"] = df_for_viz.apply(
+    lambda row: not bool(re.search(r"\b(beef|chicken)\b",
+                                   str(row["Name of Recipe"]),
+                                   flags=re.I)),
+    axis=1
+)
+```
+
+Selecting only Tuesday-Friday because we didn't get any matches for Monday and don't want to create a misleading plot (explained further below).
+```{python}
+df_for_viz_plot = df_for_viz.iloc[1:5]
+    
+```
+
+```{python}
+from plotnine import *
+```
+
+
+```{python}
+(ggplot(df_for_viz_plot,
+aes(
+    x = 'Name of Recipe',
+    y = 'Average Calories',
+    fill = 'Vegetarian'
+    ))
+    + geom_col()
+    + theme(axis_text_x = element_text(angle = 45, hjust = 1, vjust = 1))
+)
+```
+From the data we collected, we are able to see that of the recipes that were matched with the Meal Plan #202, the recipies that are not vegetarian appear to have higher calories on average then the vegetarian options. We were not able to visualize the Chicken Divan dish because we recieved zero matches. Filtering out Monday is the best thing to do in this plot because keeping it in would result in a visualization that would look like matching recipes for Chicken Divan had an average of 0 calories when in fact there just wasn't a match.
