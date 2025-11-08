@@ -1,0 +1,547 @@
+---
+title: "GSB 544 Lab 4"
+author: "Eddie Cagney"
+format:
+  html:
+    embed-resources: true
+    code-fold: true
+editor: source
+execute:
+  echo: true
+  error: true
+  message: false
+  warning: false
+---
+## 1
+# Data Prep
+
+```{python}
+import pandas as pd
+from sklearn.metrics import mean_squared_error, r2_score
+from sklearn.linear_model import LinearRegression
+from sklearn.model_selection import train_test_split
+lr = LinearRegression()
+
+dat = pd.read_csv("https://www.dropbox.com/s/bocjjyo1ehr5auz/insurance_costs_1.csv?dl=1")
+
+```
+
+# Summary
+
+```{python}
+mean = dat['age'].mean()
+print(f'The average age of the data is {mean}')
+
+sex_prop = dat['sex'].value_counts(normalize=True)
+print(f'The proportion of female-to-male is \n{sex_prop}')
+
+charges_summary = dat['age'].describe()
+print(f'A brief description of the charges variable: \n{charges_summary}')
+```
+
+# Fixing Data
+In the data, I noticed that the categorical variables are written as strings, not boolean values. So it would be best to convert these into dummy variables for analysis. 
+
+```{python}
+from pandas import get_dummies
+df = get_dummies(dat)
+```
+
+# Plots 
+```{python}
+from plotnine import *
+
+(ggplot(df,
+aes(x = 'age', y = 'charges'))
++ geom_point()
+)
+```
+Some strange patterns appear in this plots with `charges` ran along `age`. Visually, it looks like there could be a categoircal variable that makes for certain "breaks" between the data in this graph.
+
+```{python}
+(ggplot(df,
+aes(x = 'bmi', y = 'charges'))
++ geom_point()
+)
+```
+
+There still seems to be some srange collection of values in this plot, but not nearly as distinct as the previous plot. This leads me to believe this graph is also effected by the same variable as the previous plot.
+
+```{python}
+(ggplot(dat,
+aes(x = 'region', y = 'charges', fill = 'region'))
++ geom_col()
+)
+```
+
+To further inspect, I plotted charges based on region and didn't notice anything too bizzare so I'm assuming it will be within another categorical variable.
+
+## 2
+# Modeling
+```{python}
+y = df['charges']
+X = df[['age']]
+
+lr_fit = lr.fit(X, y)
+
+coefs = lr_fit.coef_
+inter = round(lr_fit.intercept_,2)
+print(f'The coefficient estimate for age as a predictor of charges is {round(coefs[0],2)}, this model also gave the intercept of {inter}.')
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25)
+lr_fit = lr.fit(X_train, y_train)
+
+y_pred_lrfit_test_age = lr_fit.predict(X_test)
+mse_test_lrfit = mean_squared_error(y_test, y_pred_lrfit_test_age)
+
+r2_test_lrfit = r2_score(y_test, y_pred_lrfit_test_age)
+
+print(f'The MSE for the model including age is {round(mse_test_lrfit,2)} and the R-squared is {round(r2_test_lrfit,3)}.')
+```
+
+The coefficient for `age` is about 228.799, this means that the charges billed to a beneficiary is estimated to increase about $228.79 for each additional year to someones age. This intercept however is not very useful given that having an age 0 and being charged with $3,611.76 is not of particular interest in this inspection. Akso, having an R-squared of 0.064 makes us inclined to believe this model is not a great fit for our data.
+
+
+```{python}
+y2 = df['charges']
+X2 = df[['age', 'sex_female']]
+
+lr_fit2 = lr.fit(X2, y2)
+
+coefs2 = lr_fit2.coef_
+inter2 = round(lr_fit2.intercept_,2)
+print(f'The coefficient estimate for age as a predictor of charges is {round(coefs2[0],2)}, our coefficient estimate for sex(female) is {round(coefs2[1],2)} this model also gave the intercept of {inter2}.')
+
+```
+This model leads us to predict that females are typically charged less then men by insurance, adjusting for age.
+
+
+```{python}
+y3 = df['charges']
+X3 = df[['age', 'smoker_yes']]
+
+lr_fit3 = lr.fit(X3, y3)
+
+coefs3 = lr_fit3.coef_
+inter3 = round(lr_fit3.intercept_,2)
+print(f'The coefficient estimate for age as a predictor of charges is {round(coefs3[0],2)}, our coefficient estimate for smoker(yes) is {round(coefs3[1],2)} this model also gave the intercept of {inter3}.')
+```
+From this model we are able to see a large difference in the predicted charge. Given that the individual was a smoker, they're predicted to have a significant more amount of charges, adjusting for age. 
+
+# Goodness-of-fit Metrics
+```{python}
+# Age and sex MSE/R2
+X_train, X_test, y_train, y_test = train_test_split(X2, y2, test_size=0.25)
+lr_fit = lr.fit(X_train, y_train)
+
+y_pred_lrfit_test = lr_fit.predict(X_test)
+mse_test_lrfit = mean_squared_error(y_test, y_pred_lrfit_test)
+
+r2_test_lrfit = r2_score(y_test, y_pred_lrfit_test)
+
+print(f'The MSE for the model including age and sex is {round(mse_test_lrfit,2)} and the R-squared is {round(r2_test_lrfit,3)}.')
+```
+
+
+```{python}
+X_train, X_test, y_train, y_test = train_test_split(X3, y3, test_size=0.25)
+lr_fit = lr.fit(X_train, y_train)
+
+y_pred_lrfit_test = lr_fit.predict(X_test)
+mse_test_lrfit = mean_squared_error(y_test, y_pred_lrfit_test)
+
+r2_test_lrfit = r2_score(y_test, y_pred_lrfit_test)
+
+print(f'The MSE for the model including age and smoker is {round(mse_test_lrfit,2)} and the R-squared is {round(r2_test_lrfit,3)}.')
+```
+
+With a lower MSE and a higher R2, the model containing age and smoker is a better fit for the data. The MSE for the age/sex model was significantly higher  and R-squared lower, compared to the MSE for the age/smoker modeland R-squared . 
+
+## 3
+# Modeling Quant Variables 
+1)
+
+```{python}
+y_1 = df['charges']
+X_1 = df[['age', 'bmi']]
+
+lr_fit_1 = lr.fit(X_1, y_1)
+
+coefs_1 = lr_fit_1.coef_
+inter_1 = round(lr_fit_1.intercept_,2)
+print(f'The coefficient estimate for age as a predictor of charges is {round(coefs_1[0],2)}, our coefficient estimate for bmi is {round(coefs_1[1],2)} this model also gave the intercept of {inter_1}.')
+
+X_train, X_test, y_train, y_test = train_test_split(X_1, y_1, test_size=0.25)
+lr_fit_bmi = lr.fit(X_train, y_train)
+
+y_pred_lrfit_test_bmi = lr_fit_bmi.predict(X_test)
+mse_test_lrfit_bmi = mean_squared_error(y_test, y_pred_lrfit_test)
+
+r2_test_lrfit = r2_score(y_test, y_pred_lrfit_test_bmi)
+
+print(f'The MSE for the model including age and bmi is {round(mse_test_lrfit,2)} and the R-squared is {round(r2_test_lrfit,3)}.')
+```
+Fitting the model with `age` and `bmi`, we found that the MSE is slightly higher compared to the model of `age` and `sex`, but the R-squared is higher as well. Depending on the metric we wanted to use as out 'model fit identifier', we could pick either model as the preferred one.
+
+
+2)
+
+```{python}
+df['age_squared'] = df['age'] ** 2
+df['age3'] = df['age'] ** 3
+df['age4'] = df['age'] ** 4
+df['age5'] = df['age'] ** 5
+df['age6'] = df['age'] ** 6
+df['age7'] = df['age'] ** 7
+df['age8'] = df['age'] ** 8
+df['age9'] = df['age'] ** 9
+df['age10'] = df['age'] ** 10
+df['age11'] = df['age'] ** 11
+df['age12'] = df['age'] ** 12
+
+```
+
+```{python}
+y2 = df['charges']
+X2 = df[['age', 'age_squared']]
+
+lr_fit2 = lr.fit(X2, y2)
+
+X_train, X_test, y_train, y_test = train_test_split(X2, y2, test_size=0.25)
+lr_fit = lr.fit(X_train, y_train)
+
+y_pred_lrfit_test = lr_fit.predict(X_test)
+mse_test_lrfit = mean_squared_error(y_test, y_pred_lrfit_test)
+
+r2_test_lrfit = r2_score(y_test, y_pred_lrfit_test)
+
+print(f'The MSE for the model including age and age_squared is {round(mse_test_lrfit,2)} and the R-squared is {round(r2_test_lrfit,3)}.')
+```
+The model including age and age^2 has a slightly higher MSE and a slightly lower R2 than the model we created in Q1 Part 1, meaning this model does not fit as well as the original.
+
+3)
+
+```{python}
+y3 = df['charges']
+X3 = df[['age', 'age_squared', 'age3', 'age4']]
+
+lr_fit3 = lr.fit(X3, y3)
+
+X_train, X_test, y_train, y_test = train_test_split(X3, y3, test_size=0.25)
+lr_fit = lr.fit(X_train, y_train)
+
+y_pred_lrfit_test2 = lr_fit.predict(X_test)
+# getting predicted for later problem
+y_pred_lrfit_test_for_prob6 = lr_fit.predict(X3)
+
+mse_test_lrfit = mean_squared_error(y_test, y_pred_lrfit_test2)
+
+r2_test_lrfit = r2_score(y_test, y_pred_lrfit_test2)
+
+print(f'The MSE for the model including age and age^4 is {round(mse_test_lrfit,2)} and the R-squared is {round(r2_test_lrfit,3)}.')
+```
+This model has a lower MSE and higher R-squared in the model form Q1 part 1.
+
+4)
+
+```{python}
+y4 = df['charges']
+X4 = df[['age', 'age_squared', 'age3', 'age4', 'age5', 'age6', 'age7', 'age8', 'age9', 'age10', 'age11', 'age12']]
+
+lr_fit2 = lr.fit(X4, y4)
+
+X_train, X_test, y_train, y_test = train_test_split(X4, y4, test_size=0.25)
+lr_fit = lr.fit(X_train, y_train)
+
+y_pred_lrfit_test3 = lr_fit.predict(X_test)
+mse_test_lrfit = mean_squared_error(y_test, y_pred_lrfit_test3)
+
+r2_test_lrfit = r2_score(y_test, y_pred_lrfit_test3)
+
+print(f'The MSE for the model including age and age^12 is {round(mse_test_lrfit,2)} and the R-squared is {round(r2_test_lrfit,3)}.')
+```
+The MSE for this model is lower than the model in Q2 Part 2 but has a lower R2 value.
+
+5)
+
+ The "best" model is the model with age and age^4. This is because that model had the lowest MSE and highest R-squared value. However, I don't believe this model fits very well at all given that the R-squared shows the model accounts for a small portion of the variation in charges.
+
+6)
+
+
+```{python}
+df['predicted_for_x4'] = y_pred_lrfit_test_for_prob6
+(ggplot(df,
+aes(x = 'age', y = 'charges'))
++ geom_point()
++ geom_line(aes(y = 'predicted_for_x4'), size= 1.5, color = 'blue')
+)
+```
+
+## 4
+# Loading Data
+
+```{python}
+new_dat = pd.read_csv('https://www.dropbox.com/s/sky86agc4s8c6qe/insurance_costs_2.csv?dl=1')
+```
+
+# Cleaning
+```{python}
+new_df = get_dummies(new_dat)
+```
+
+# Models
+Age only
+
+```{python}
+y = df['charges']
+X = df[['age']]
+
+lr_fit_age = lr.fit(X, y)
+
+pred_age = lr_fit_age.predict(new_df[['age']])
+mse_test_age = mean_squared_error(new_df['charges'], pred_age)
+
+
+print(f'The MSE for the model including age is {round(mse_test_age,2)}.')
+```
+
+Age, bmi
+
+```{python}
+yy = df['charges']
+XX = df[['age', 'bmi']]
+
+lr_fit_age_bmi = lr.fit(XX, yy)
+
+pred_age_bmi = lr_fit_age_bmi.predict(new_df[['age','bmi']])
+mse_test_age_bmi = mean_squared_error(new_df['charges'], pred_age_bmi)
+
+
+print(f'The MSE for the model including age and bmi is {round(mse_test_age_bmi,2)}.')
+```
+
+Age, bmi, smoke
+```{python}
+yyy = df['charges']
+XXX = df[['age', 'bmi', 'smoker_yes']]
+
+lr_fit_abs = lr.fit(XXX, yyy)
+
+y_pred_lrfit_test_smoke = lr_fit_abs.predict(new_df[['age','bmi','smoker_yes']])
+
+mse_test_lrfit_smoke = mean_squared_error(new_df['charges'], y_pred_lrfit_test_smoke)
+
+print(f'The MSE for the model including age bmi and smoker is {round(mse_test_lrfit_smoke,2)}.')
+```
+
+Age, bmi, smoke interactions
+
+```{python}
+df['age_smoke'] = df['age'] * df['smoker_yes']
+df['bmi_smoke'] = df['bmi'] * df['smoker_yes']
+
+new_df['age_smoke'] = new_df['age'] * new_df['smoker_yes']
+new_df['bmi_smoke'] = new_df['bmi'] * new_df['smoker_yes']
+```
+
+```{python}
+y_s_i = df['charges']
+X_s_i = df[['age', 'bmi', 'age_smoke', 'bmi_smoke']]
+
+lr_fit_si = lr.fit(X_s_i, y_s_i)
+
+y_pred_lrfit_test_si = lr_fit.predict(new_df[['age','bmi','age_smoke', 'bmi_smoke']])
+
+mse_test_lrfit_smoke = mean_squared_error(new_df['charges'], y_pred_lrfit_test_si)
+
+print(f'The MSE for the model including age, bmi, and interactions between age/smoker and bmi/smoker is {round(mse_test_lrfit_smoke,2)}.')
+
+```
+
+Age, bmi, smoker, smoker interactions
+
+```{python}
+y_s_i2 = df['charges']
+X_s_i2 = df[['age', 'bmi', 'smoker_yes', 'age_smoke', 'bmi_smoke']]
+
+lr_fit_si2 = lr.fit(X_s_i2, y_s_i2)
+
+y_pred_lrfit_test_si2 = lr_fit2.predict(new_df[['age','bmi', 'smoker_yes','age_smoke', 'bmi_smoke']])
+# putting the predicted on the dataset
+new_df['predicted_charges'] = lr_fit2.predict(new_df[['age','bmi', 'smoker_yes','age_smoke', 'bmi_smoke']])
+
+mse_test_lrfit_si2 = mean_squared_error(new_df['charges'], y_pred_lrfit_test_si2)
+
+print(f'The MSE for the model including age, bmi, smoker and interactions between age/smoker and bmi/smoker is {round(mse_test_lrfit_si2,2)}.')
+```
+
+Based on the MSE's of all the models, the model with the smallest MSE that seems to be the best fit is the model containing `age`, `bmi`, `smoker`, `age*smoke`, and `bmi*smoke`.
+
+# Residuals
+```{python}
+new_df['residuals'] = new_df['charges'] - new_df['predicted_charges']
+```
+
+# Plot
+
+```{python}
+(ggplot(new_df,
+aes(x = 'predicted_charges', y = 'residuals'))
++ geom_point()
+)
+```
+I'm fairly accurate this graph is representative of the data and that my code is correct...but I'm not sure what to make of it, especially with that strange grouping of residuals.
+
+## 5
+
+```{python}
+df['bmi2'] = df['bmi'] ** 2
+df['bmi3'] = df['bmi'] ** 3
+df['bmi4'] = df['bmi'] ** 4
+df['bmi5'] = df['bmi'] ** 5
+df['bmi6'] = df['bmi'] ** 6
+df['bmi7'] = df['bmi'] ** 7
+df['bmi8'] = df['bmi'] ** 8
+
+
+new_df['bmi2'] = new_df['bmi'] ** 2
+new_df['bmi3'] = new_df['bmi'] ** 3
+new_df['bmi4'] = new_df['bmi'] ** 4
+new_df['bmi5'] = new_df['bmi'] ** 5
+new_df['bmi6'] = new_df['bmi'] ** 6
+new_df['bmi7'] = new_df['bmi'] ** 7
+new_df['bmi8'] = new_df['bmi'] ** 8
+
+```
+
+Base model, no polynomials 
+
+```{python}
+y_bmi = df['charges']
+X_bmi = df[['age', 'bmi', 'smoker_yes']]
+
+lr_fit_bmi = lr.fit(X_bmi, y_bmi)
+
+y_pred_lrfit_test_bmi = lr_fit_bmi.predict(new_df[['age','bmi','smoker_yes']])
+
+mse_test_lrfit_bmi = mean_squared_error(new_df['charges'], y_pred_lrfit_test_bmi)
+
+print(f'The MSE for the model including age bmi and smoker is {round(mse_test_lrfit_bmi,2)}.')
+```
+
+bmi^2
+```{python}
+y_bmi2 = df['charges']
+X_bmi2 = df[['age', 'bmi', 'bmi2', 'smoker_yes']]
+
+lr_fit_bmi2 = lr.fit(X_bmi2, y_bmi2)
+
+y_pred_lrfit_test_bmi2 = lr_fit_bmi2.predict(new_df[['age','bmi', 'bmi2','smoker_yes']])
+
+mse_test_lrfit_bmi2 = mean_squared_error(new_df['charges'], y_pred_lrfit_test_bmi2)
+
+print(f'The MSE for the model including age bmi and smoker is {round(mse_test_lrfit_bmi2,2)}.')
+```
+
+
+```{python}
+y_bmi4 = df['charges']
+X_bmi4 = df[['age', 'bmi', 'bmi2', 'bmi3', 'bmi4', 'smoker_yes']]
+
+lr_fit_bmi4 = lr.fit(X_bmi4, y_bmi4)
+
+y_pred_lrfit_test_bmi4 = lr_fit_bmi4.predict(new_df[['age','bmi', 'bmi2','bmi3', 'bmi4','smoker_yes']])
+
+mse_test_lrfit_bmi4 = mean_squared_error(new_df['charges'], y_pred_lrfit_test_bmi4)
+
+print(f'The MSE for the model including age bmi and smoker is {round(mse_test_lrfit_bmi4,2)}.')
+```
+
+Bmi^8
+```{python}
+y_bmi8 = df['charges']
+X_bmi8 = df[['age', 'bmi', 'bmi2', 'bmi3', 'bmi4', 'bmi5', 'bmi6', 'bmi7', 'bmi8', 'smoker_yes']]
+
+lr_fit_bmi8 = lr.fit(X_bmi8, y_bmi8)
+
+y_pred_lrfit_test_bmi8 = lr_fit_bmi8.predict(new_df[['age','bmi', 'bmi2','bmi3', 'bmi4', 'bmi5', 'bmi6', 'bmi7', 'bmi8','smoker_yes']])
+
+mse_test_lrfit_bmi8 = mean_squared_error(new_df['charges'], y_pred_lrfit_test_bmi8)
+
+print(f'The MSE for the model including age bmi and smoker is {round(mse_test_lrfit_bmi8,2)}.')
+```
+
+From those models, bmi^2 gave the lowest mse so we'll use that going forward 
+
+Interaction between smoker and age
+
+```{python}
+y_int = df['charges']
+X_int = df[['age', 'bmi', 'bmi2', 'smoker_yes', 'age_smoke']]
+
+lr_fit_int = lr.fit(X_int, y_int)
+
+y_pred_lrfit_test_int = lr_fit_int.predict(new_df[['age','bmi', 'bmi2','smoker_yes', 'age_smoke']])
+
+mse_test_lrfit_int = mean_squared_error(new_df['charges'], y_pred_lrfit_test_int)
+
+print(f'The MSE for the model including age bmi and smoker is {round(mse_test_lrfit_int,2)}.')
+```
+
+MSE is slowly going down so we will keep these variables in the model
+
+
+```{python}
+y_int_sex = df['charges']
+X_int_sex = df[['age', 'bmi', 'bmi2', 'smoker_yes', 'age_smoke', 'sex_male']]
+
+lr_fit_int_sex = lr.fit(X_int_sex, y_int_sex)
+
+y_pred_lrfit_test_int_sex = lr_fit_int_sex.predict(new_df[['age','bmi', 'bmi2','smoker_yes', 'age_smoke', 'sex_male']])
+
+mse_test_lrfit_int_sex = mean_squared_error(new_df['charges'], y_pred_lrfit_test_int_sex)
+
+print(f'The MSE for the model including age bmi and smoker is {round(mse_test_lrfit_int_sex,2)}.')
+```
+
+MSE went back up so we're not going to include sex in the model
+
+Putting bmi interaction with smoker in the model.
+
+```{python}
+y_w = df['charges']
+X_w = df[['age', 'bmi', 'bmi2', 'smoker_yes', 'age_smoke',  'bmi_smoke']]
+
+lr_fit_int_w = lr.fit(X_w, y_w)
+
+y_pred_lrfit_test_w = lr_fit_int_w.predict(new_df[['age','bmi', 'bmi2','smoker_yes', 'age_smoke', 'bmi_smoke']])
+# putting prediction in dataset
+new_df['predicted_charges2'] = lr_fit_int_w.predict(new_df[['age','bmi', 'bmi2','smoker_yes', 'age_smoke', 'bmi_smoke']])
+
+mse_test_lrfit_w = mean_squared_error(new_df['charges'], y_pred_lrfit_test_w)
+
+print(f'The MSE for the model including age bmi and smoker is {round(mse_test_lrfit_w)}.')
+```
+
+Winner winner chicken dinner!!!
+Found that the model containing `age`, `bmi`, `bmi2`, `smoker_yes`, `age*smoke`,  `bmi*smoke` brought the smallest MSE and would be the best fit for the new data.
+
+# Residuals
+```{python}
+# putting the predicted on the dataset
+
+
+new_df['residuals2'] = new_df['charges'] - new_df['predicted_charges2']
+```
+
+# Plot
+
+```{python}
+(ggplot(new_df,
+aes(x = 'predicted_charges2', y = 'residuals2'))
++ geom_point()
+)
+```
+
+This plot doesn't look very different from the plot constructed in the previous problem.

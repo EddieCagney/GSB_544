@@ -1,0 +1,221 @@
+---
+title: "GSB 544 PA 7.2"
+author: "Eddie Cagney"
+format:
+  html:
+    embed-resources: true
+    code-fold: true
+editor: source
+execute:
+  echo: true
+  error: true
+  message: false
+  warning: false
+---
+
+```{python}
+import pandas as pd
+import numpy as np
+from sklearn.pipeline import Pipeline
+from sklearn.compose import make_column_selector, ColumnTransformer
+from sklearn.preprocessing import StandardScaler, OneHotEncoder, PolynomialFeatures
+from sklearn.linear_model import LinearRegression, Ridge, Lasso, ElasticNet 
+from sklearn.model_selection import train_test_split, cross_val_score, GridSearchCV
+from sklearn.metrics import r2_score
+```
+```{python}
+# Read the data
+ames = pd.read_csv("C:/Users/Eddie/Documents/GSB 544/Data/AmesHousing.csv")
+
+# Get rid of columns with mostly NaN values
+good_cols = ames.isna().sum() < 100
+ames = ames.loc[:,good_cols]
+
+# Drop other NAs
+ames = ames.dropna()
+```
+
+```{python}
+X = ames.drop(["SalePrice", "Order", "PID"], axis = 1)
+y = ames["SalePrice"]
+
+
+ct = ColumnTransformer(
+  [
+    ("dummify", 
+    OneHotEncoder(sparse_output = False, handle_unknown='ignore'),
+    make_column_selector(dtype_include=object)),
+    ("standardize", 
+    StandardScaler(), 
+    make_column_selector(dtype_include=np.number))
+  ],
+  remainder = "passthrough"
+)
+
+lr_pipeline_1 = Pipeline(
+  [("preprocessing", ct),
+  ("ridge_regression", LinearRegression())]
+)
+
+cross_val_score(lr_pipeline_1, X, y, cv = 5, scoring = 'r2')
+
+```
+
+# Ridge regression
+```{python}
+X = ames.drop(["SalePrice", "Order", "PID"], axis = 1)
+y = ames["SalePrice"]
+
+
+ct = ColumnTransformer(
+  [
+    ("dummify", 
+    OneHotEncoder(sparse_output = False, handle_unknown='ignore'),
+    make_column_selector(dtype_include=object)),
+    ("standardize", 
+    StandardScaler(), 
+    make_column_selector(dtype_include=np.number))
+  ],
+  remainder = "passthrough"
+)
+
+lr_pipeline_ridge = Pipeline(
+  [("preprocessing", ct),
+  ("ridge_regression", Ridge(alpha = 1))]
+)
+
+cross_val_score(lr_pipeline_ridge, X, y, cv = 5, scoring = 'r2')
+```
+
+
+```{python}
+ridge_fit = lr_pipeline_1.fit(X,y)
+ridge_fit.named_steps['ridge_regression'].coef_
+```
+
+# tuning on ridge
+
+```{python}
+degrees = {'ridge_regression__alpha': [0.001, 0.01, 0.1, 1, 10]}
+
+gscv = GridSearchCV(lr_pipeline_ridge, degrees, cv = 5, scoring='r2')
+```
+
+
+```{python}
+gscv_fitted = gscv.fit(X,y)
+
+gscv_fitted.cv_results_['params']
+
+gscv_fitted.cv_results_['mean_test_score']
+
+```
+# Tuning on ridge  results
+
+```{python}
+pd.DataFrame(data = {"degrees": [0.001, 0.01, 0.1, 1, 10], "scores": gscv_fitted.cv_results_['mean_test_score']})
+
+# lambda 10 was the best fit
+```
+
+# Lasso
+```{python}
+X = ames.drop(["SalePrice", "Order", "PID"], axis = 1)
+y = ames["SalePrice"]
+
+
+ct = ColumnTransformer(
+  [
+    ("dummify", 
+    OneHotEncoder(sparse_output = False, handle_unknown='ignore'),
+    make_column_selector(dtype_include=object)),
+    ("standardize", 
+    StandardScaler(), 
+    make_column_selector(dtype_include=np.number))
+  ],
+  remainder = "passthrough"
+)
+
+lr_pipeline_lasso = Pipeline(
+  [("preprocessing", ct),
+  ("lasso_regression", Lasso(alpha = 1))]
+)
+
+cross_val_score(lr_pipeline_lasso, X, y, cv = 5, scoring = 'r2')
+```
+
+```{python}
+lasso_fit = lr_pipeline_lasso.fit(X,y)
+lasso_fit.named_steps['lasso_regression'].coef_
+```
+
+# Tuning for lasso
+
+
+```{python}
+degrees_lasso = {'lasso_regression__alpha': [0.001, 0.01, 0.1, 1, 10]}
+
+gscv_lasso = GridSearchCV(lr_pipeline_lasso, degrees_lasso, cv = 5, scoring='r2')
+```
+
+# Tuning for lasso
+```{python}
+gscv_lasso_fitted = gscv_lasso.fit(X,y)
+
+gscv_lasso_fitted.cv_results_['params'] # shows you which parameters were used (degrees)
+
+gscv_lasso_fitted.cv_results_['mean_test_score']
+
+pd.DataFrame(data = {"degrees": [0.001, 0.01, 0.1, 1, 10], "scores": gscv_fitted.cv_results_['mean_test_score']})
+```
+
+# Elastic Net 
+
+```{python}
+X = ames.drop(["SalePrice", "Order", "PID"], axis = 1)
+y = ames["SalePrice"]
+
+
+ct = ColumnTransformer(
+  [
+    ("dummify", 
+    OneHotEncoder(sparse_output = False, handle_unknown='ignore'),
+    make_column_selector(dtype_include=object)),
+    ("standardize", 
+    StandardScaler(), 
+    make_column_selector(dtype_include=np.number))
+  ],
+  remainder = "passthrough"
+)
+
+lr_pipeline_elastic = Pipeline(
+  [("preprocessing", ct),
+  ("elastic_net", ElasticNet(alpha = 1))]
+)
+
+cross_val_score(lr_pipeline_elastic, X, y, cv = 5, scoring = 'r2')
+```
+
+```{python}
+elastic_fit = lr_pipeline_elastic.fit(X,y)
+elastic_fit.named_steps['elastic_net'].coef_
+```
+
+# Tuning for Elastic
+
+
+```{python}
+degrees_elastic = {'elastic_net__alpha': [0.001, 0.01, 0.1, 1, 10]}
+
+gscv_elastic = GridSearchCV(lr_pipeline_elastic, degrees_elastic, cv = 5, scoring='r2')
+```
+
+```{python}
+gscv_elastic_fitted = gscv_elastic.fit(X,y)
+
+gscv_elastic_fitted.cv_results_['params'] # shows you which parameters were used (degrees)
+
+gscv_elastic_fitted.cv_results_['mean_test_score']
+
+pd.DataFrame(data = {"degrees": [0.001, 0.01, 0.1, 1, 10], "scores": gscv_elastic_fitted.cv_results_['mean_test_score']})
+```

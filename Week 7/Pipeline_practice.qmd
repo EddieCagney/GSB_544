@@ -1,0 +1,216 @@
+---
+title: "GSB 544 PA 7.1"
+author: "Eddie Cagney"
+format:
+  html:
+    embed-resources: true
+    code-fold: true
+editor: source
+execute:
+  echo: true
+  error: true
+  message: false
+  warning: false
+---
+
+```{python}
+import pandas as pd
+import numpy as np
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler, OneHotEncoder, PolynomialFeatures
+from sklearn.linear_model import LinearRegression
+from sklearn.model_selection import train_test_split, cross_val_score, GridSearchCV
+from sklearn.metrics import mean_squared_error, r2_score
+from sklearn.compose import ColumnTransformer
+
+```
+```{python}
+ames = pd.read_csv("C:/Users/Eddie/Documents/GSB 544/Data/AmesHousing.csv")
+
+```
+
+# Creating training and test data
+```{python}
+X = ames.drop("SalePrice", axis = 1)
+y = ames["SalePrice"]
+
+
+
+X_train, X_test, y_train, y_test = train_test_split(X, y)
+```
+
+# Column Transformations
+
+```{python}
+# For model 1 ########################################
+ct= ColumnTransformer(
+    [('scale', StandardScaler(), ["Gr Liv Area", "TotRms AbvGrd"])],
+    remainder = 'drop'
+).set_output(transform = "pandas")
+
+# For Model 2 #########################################
+ct_dummy_scale = ColumnTransformer(
+    [
+        ('dummify', OneHotEncoder(sparse_output = False), ["Bldg Type"]),
+        ('scale', StandardScaler(), ["Gr Liv Area", "TotRms AbvGrd"])
+    ],
+    remainder = 'drop'
+).set_output(transform = "pandas")
+
+# For model 3 ##########################################
+ct_size= ColumnTransformer(
+    [('scale', StandardScaler(), ["Gr Liv Area"]),
+    ('dummify', OneHotEncoder(sparse_output = False), ["Bldg Type"])],
+    remainder = 'drop'
+).set_output(transform = "pandas")
+
+
+ct_interaction = ColumnTransformer(
+    [
+        ("interaction", PolynomialFeatures(interaction_only = True), ["scale__Gr Liv Area", "dummify__Bldg Type_1Fam"]),
+        ("interaction2", PolynomialFeatures(interaction_only = True), ["scale__Gr Liv Area", "dummify__Bldg Type_2fmCon"]),
+        ("interaction3", PolynomialFeatures(interaction_only = True), ["scale__Gr Liv Area", "dummify__Bldg Type_Duplex"]),
+        ("interaction4", PolynomialFeatures(interaction_only = True), ["scale__Gr Liv Area", "dummify__Bldg Type_Twnhs"]),
+        ("interaction5", PolynomialFeatures(interaction_only = True), ["scale__Gr Liv Area", "dummify__Bldg Type_TwnhsE"])
+    ],
+    remainder = 'drop'
+).set_output(transform = "pandas")
+
+# For Model  4 #####################################
+ct_poly_5 = ColumnTransformer(
+  [
+    ("dummify", OneHotEncoder(sparse_output = False), ["Bldg Type"]),
+    ("polynomial_size", PolynomialFeatures(5, include_bias=False), ["Gr Liv Area"]),
+    ("polynomial_rooms", PolynomialFeatures(5, include_bias=False), ["TotRms AbvGrd"])
+  ],
+  remainder = "drop"
+)
+
+# For the last "tuning" PA ###############
+ct_poly_unnamed = ColumnTransformer(
+  [
+    ("dummify", OneHotEncoder(sparse_output = False), ["Bldg Type"]),
+    ("polynomial_size", PolynomialFeatures(), ["Gr Liv Area"]),
+    ("polynomial_rooms", PolynomialFeatures(), ["TotRms AbvGrd"])
+  ],
+  remainder = "drop"
+)
+
+```
+
+# Pipelines
+
+```{python}
+lr_pipeline = Pipeline(
+  [("preprocessing", ct),
+  ("linear_regression", LinearRegression())])
+
+lr_pipeline_more = Pipeline(
+  [("preprocessing", ct_dummy_scale),
+  ("linear_regression", LinearRegression())])
+
+lr_pipeline_int = Pipeline(
+  [("preprocessing", ct_size),
+  ("preprocessing2", ct_interaction),
+  ("linear_regression", LinearRegression())])
+
+lr_pipeline_poly_5 = Pipeline(
+  [("preprocessing", ct_poly_5),
+  ("linear_regression", LinearRegression())])
+
+lr_pipeline_poly_unnamed = Pipeline(
+  [("preprocessing", ct_poly_unnamed),
+  ("linear_regression", LinearRegression())])
+```
+
+# Applying pipelines
+
+```{python}
+lr_fitted = lr_pipeline.fit(X_train, y_train)
+lr_fitted.named_steps['linear_regression'].coef_
+
+lr_more_fitted = lr_pipeline_more.fit(X_train, y_train)
+lr_more_fitted.named_steps['linear_regression'].coef_
+
+lr_int_fitted = lr_pipeline_int.fit(X_train, y_train)
+lr_int_fitted.named_steps['linear_regression'].coef_
+
+lr_poly_5_fitted = lr_pipeline_poly_5.fit(X_train, y_train)
+lr_poly_5_fitted.named_steps['linear_regression'].coef_
+
+```
+
+# How to look at names in the new transformed data from ColumnTransform
+
+```{python}
+ct_fitted = ct_dummy_scale.fit(X_train) # the ct_dummy_scale is the Column transformation name
+ct_fitted.transform(X_train)
+
+ct_size_fit = ct_size.fit(X_train) # ct_size is the column transformation name, we then fit it on the training data
+ct_size_fit.transform(X_train)
+```
+
+# Predictions
+```{python}
+pred_lr_fitted = lr_fitted.predict(X_test)
+
+pred_lr_more_fitted = lr_more_fitted.predict(X_test)
+
+pred_lr_int_fitted = lr_int_fitted.predict(X_test)
+
+pred_lr_poly_5_fitted = lr_poly_5_fitted.predict(X_test)
+```
+
+# Root Mean Square Error for each models predictions
+```{python}
+mse_lr_fitted = mean_squared_error(y_test, pred_lr_fitted) ** 0.5 
+
+mse_lr_more_fitted = mean_squared_error(y_test, pred_lr_more_fitted) ** 0.5
+
+mse_lr_int_fitted = mean_squared_error(y_test, pred_lr_int_fitted) ** 0.5
+
+mse_lr_poly_5_fitted = mean_squared_error(y_test, pred_lr_poly_5_fitted) ** 0.5
+
+list([mse_lr_fitted, mse_lr_more_fitted, mse_lr_int_fitted, mse_lr_poly_5_fitted])
+```
+The lowest MSE belonged to the interaction model.
+
+# Cross Validation
+```{python}
+score_base = cross_val_score(lr_pipeline, X, y, cv=5, scoring='neg_root_mean_squared_error')
+score_base= -score_base
+score_base_mean = score_base.mean()
+
+score_base_more = cross_val_score(lr_pipeline_more, X, y, cv=5, scoring='neg_root_mean_squared_error')
+score_base_more= -score_base_more
+score_base_more_mean = score_base_more.mean()
+
+score_base_int = cross_val_score(lr_pipeline_int, X, y, cv=5, scoring='neg_root_mean_squared_error')
+score_base_int= -score_base_int
+score_base_int_mean = score_base_int.mean()
+
+score_base_poly = cross_val_score(lr_pipeline_poly_5, X, y, cv=5, scoring='neg_root_mean_squared_error')
+score_base_poly = -score_base_poly
+score_base_poly_mean = score_base_poly.mean()
+
+list([score_base_mean, score_base_more_mean, score_base_int_mean, score_base_poly_mean])
+
+```
+Yes! These results agreed with the previous part in which model seems to fit the best in that being the interaction model!
+
+# Doing tuning
+Already applied the CV and pipeline above (as: ..._unnamed)
+
+```{python}
+degrees = {'preprocessing__polynomial_size__degree': np.arange(1, 10), 'preprocessing__polynomial_rooms__degree': np.arange(1, 10)}
+
+gscv = GridSearchCV(lr_pipeline_poly_unnamed, degrees, cv = 5, scoring='r2')
+
+gscv_fitted = gscv.fit(X, y)
+
+gscv_fitted.cv_results_
+```
+
+```{python}
+```
+
