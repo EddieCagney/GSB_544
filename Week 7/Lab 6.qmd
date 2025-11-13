@@ -1,0 +1,616 @@
+---
+title: "GSB 544 Lab 6"
+author: "Eddie Cagney"
+format:
+  html:
+    embed-resources: true
+    code-fold: true
+editor: source
+execute:
+  echo: true
+  error: true
+  message: false
+  warning: false
+---
+
+## Setup
+# Loading packages and data
+```{python}
+import pandas as pd
+import numpy as np
+from sklearn.pipeline import Pipeline
+from sklearn.compose import make_column_selector, ColumnTransformer
+from sklearn.preprocessing import StandardScaler, OneHotEncoder, PolynomialFeatures
+from sklearn.linear_model import LinearRegression, Ridge, Lasso, ElasticNet 
+from sklearn.model_selection import train_test_split, cross_val_score, GridSearchCV
+from sklearn.metrics import r2_score
+```
+
+```{python}
+hitters = pd.read_csv("C:/Users/Eddie/Documents/GSB 544/Data/Hitters.csv")
+```
+
+# Cleaning
+There are not any variables that need adjusting or changing in their type but there were some missing values that needed to be removed in order to do proper analysis.
+```{python}
+# dropping NAs
+hitters = hitters.dropna()
+
+```
+
+## Part 1
+# A)
+**Linear Regression**
+```{python}
+X = hitters.drop(["Salary"], axis = 1)
+y = hitters["Salary"]
+
+ct = ColumnTransformer(
+  [
+    ("dummify", 
+    OneHotEncoder(sparse_output = False, handle_unknown='ignore'),
+    make_column_selector(dtype_include=object)),
+    ("standardize", 
+    StandardScaler(), 
+    make_column_selector(dtype_include=np.number))
+  ],
+  remainder = "passthrough"
+)
+
+lr_pipeline = Pipeline(
+  [("preprocessing", ct),
+  ("linear_regression", LinearRegression())]
+)
+
+lr_fitted = lr_pipeline.fit(X, y)
+
+lr_coefs = lr_fitted.named_steps['linear_regression'].coef_
+lr_coef_names = lr_fitted.named_steps["preprocessing"].get_feature_names_out()
+lr_coef_df = pd.DataFrame({"Variable": lr_coef_names, "Coef": lr_coefs})
+print(lr_coef_df)
+```
+
+Some of the more important coefficients in this model belong to League variable, which is indicating that the average National league player is estimated to be paid about $31.29 thousand more than those in the American league. Also that being in the East Division creates an estimated $58.4 thousand more than that in the West Division. Also we see that as a player has more hits, their salary also increases seeing that for every one hit in 1986, the estimated salary of that player is expected to increase by $337.83 thousand dollars.
+
+*Cross Validation*
+```{python}
+cv = cross_val_score(lr_pipeline, X, y, cv = 5, scoring = 'neg_root_mean_squared_error')
+avg_mse = -cv.mean()
+print(f'The expected MSE for prediciting 1989 salaries would be {round(avg_mse,2)}')
+```
+# B)
+**Ridge Regression**
+
+*Pipeline*
+```{python}
+ridge_pipeline = Pipeline(
+  [("preprocessing", ct),
+  ("ridge_regression", Ridge(alpha = 10))]
+)
+```
+
+*Tuning*
+```{python}
+degrees_ridge = {'ridge_regression__alpha': [0.01, 0.1, 1, 10, 100]}
+
+gscv_ridge = GridSearchCV(ridge_pipeline, degrees_ridge, cv = 5, scoring='neg_root_mean_squared_error')
+
+gscv_ridge_fitted = gscv_ridge.fit(X,y)
+
+pd.DataFrame(data = {"degrees": [0.01, 0.1, 1, 10, 100], "scores": gscv_ridge_fitted.cv_results_['mean_test_score']})
+```
+From tuning we are going to select 10 as our lambda in the Ridge Regression
+
+*Pipeline fit*
+
+```{python}
+ridge_fitted = ridge_pipeline.fit(X,y)
+
+ridge_coefs = ridge_fitted.named_steps['ridge_regression'].coef_
+ridge_coef_names = ridge_fitted.named_steps["preprocessing"].get_feature_names_out()
+ridge_coef_df = pd.DataFrame({"Variable": ridge_coef_names, "Coef": ridge_coefs})
+print(ridge_coef_df)
+```
+Some of the more important coefficients in this model belong to League variable, which is indicating that the average National league player is estimated to be paid about $24.4 thousand more than those in the American league. Also that being in the East Division creates an estimated $59.71 thousand more than that in the West Division. Also we see that as a player has more hits, their salary also increases seeing that for every one hit in 1986, the estimated salary of that player is expected to increase by $152.62 thousand dollars.
+
+*Cross Validation*
+```{python}
+cv_ridge = cross_val_score(ridge_pipeline, X, y, cv = 5, scoring = 'neg_root_mean_squared_error')
+avg_mse_ridge = -cv_ridge.mean()
+print(f'The expected MSE for prediciting 1989 salaries would be {round(avg_mse_ridge,2)}')
+```
+
+# C)
+**Lasso Regression**
+
+*Pipeline*
+```{python}
+lasso_pipeline = Pipeline(
+  [("preprocessing", ct),
+  ("lasso_regression", Lasso(alpha = 1))]
+)
+```
+
+*Tuning*
+
+```{python}
+degrees_lasso = {'lasso_regression__alpha': [0.01, 0.1, 1, 10, 100]}
+
+gscv_lasso = GridSearchCV(lasso_pipeline, degrees_lasso, cv = 5, scoring='neg_root_mean_squared_error')
+
+gscv_lasso_fitted = gscv_lasso.fit(X,y)
+
+pd.DataFrame(data = {"degrees": [0.01, 0.1, 1, 10, 100], "scores": gscv_lasso_fitted.cv_results_['mean_test_score']})
+```
+The best lambda for the lasso regression is 1 as opposed to 10 in the ridge regression.
+
+*Pipeline Fit*
+```{python}
+lasso_fitted = lasso_pipeline.fit(X,y)
+
+lasso_coefs = lasso_fitted.named_steps['lasso_regression'].coef_
+lasso_coef_names = lasso_fitted.named_steps["preprocessing"].get_feature_names_out()
+lasso_coef_df = pd.DataFrame({"Variable": lasso_coef_names, "Coef": lasso_coefs})
+print(lasso_coef_df)
+```
+Some of the more important coefficients in this model belong to League variable, which is indicating that the average National league player is estimated to be paid about $35.88 thousand more than those in the American league. Also that being in the East Division creates an estimated $114.4 thousand more than that in the West Division. For the Hits variable, for every one hit the player got in 1986, a players salary is expected to increase by $304.5 thousand dollars.
+
+*Cross Validation*
+```{python}
+cv_lasso = cross_val_score(lasso_pipeline, X, y, cv = 5, scoring = 'neg_root_mean_squared_error')
+avg_mse_lasso = -cv_lasso.mean()
+print(f'The expected MSE for prediciting 1989 salaries would be {round(avg_mse_lasso,2)}')
+```
+
+# D)
+**Elastic Net**
+
+*Pipeline*
+
+```{python}
+elastic_pipeline = Pipeline(
+  [("preprocessing", ct),
+  ("elastic_net", ElasticNet(alpha = 0.1))]
+)
+```
+
+*Tuning*
+
+```{python}
+degrees_elastic = {'elastic_net__alpha': [0.01, 0.1, 1, 10, 100]}
+
+gscv_elastic = GridSearchCV(elastic_pipeline, degrees_elastic, cv = 5, scoring='neg_root_mean_squared_error')
+
+gscv_elastic_fitted = gscv_elastic.fit(X,y)
+
+pd.DataFrame(data = {"degrees": [0.01, 0.1, 1, 10, 100], "scores": gscv_elastic_fitted.cv_results_['mean_test_score']})
+```
+For the elastic net regression, the best lambda is 0.10 as it has the lowest RMSE.
+
+```{python}
+elastic_fitted = elastic_pipeline.fit(X,y)
+
+elastic_coefs = elastic_fitted.named_steps['elastic_net'].coef_
+elastic_coef_names = elastic_fitted.named_steps["preprocessing"].get_feature_names_out()
+elastic_coef_df = pd.DataFrame({"Variable": elastic_coef_names, "Coef": elastic_coefs})
+print(elastic_coef_df)
+```
+Some of the more important coefficients in this model belong to League variable, which is indicating that the average National league player is estimated to be paid about $22.5 thousand more than those in the American league. Also that being in the East Division creates an estimated $58.7 thousand more than that in the West Division. For the Hits variable, for every one hit the player got in 1986, a players salary is expected to increase by $133.1 thousand dollars.
+
+*Cross Validation*
+```{python}
+cv_elastic = cross_val_score(elastic_pipeline, X, y, cv = 5, scoring = 'neg_root_mean_squared_error')
+avg_mse_elastic = -cv_elastic.mean()
+print(f'The expected MSE for prediciting 1989 salaries would be {round(avg_mse_elastic,2)}')
+```
+
+## Part 2
+# Numeric
+
+The most important numeric variable seems to be Career Runs, this is because of the high coefficients in every model. Although hits in 1986 does have a larger estimated impact per one hit than Career runs (per run) in some models, looking at all the models as a whole we can see that they are competing for the largest effect but in the lasso regression where the other variables that don't add predictiing power are cancelled out, we see a larger coefficient for Career runs, so thats why it is being selected as the most important numeric variable.
+**Linear**
+```{python}
+X = hitters[["CRuns"]]
+y = hitters["Salary"]
+
+cv = cross_val_score(lr_pipeline, X, y, cv = 5, scoring = 'neg_root_mean_squared_error')
+avg_mse = -cv.mean()
+print(f'The expected MSE for prediciting 1989 salaries with just Career Runs with linear regression would be {round(avg_mse,2)}')
+```
+
+*Coefs*
+
+```{python}
+lr_fitted = lr_pipeline.fit(X, y)
+
+lr_coefs = lr_fitted.named_steps['linear_regression'].coef_
+lr_coef_names = lr_fitted.named_steps["preprocessing"].get_feature_names_out()
+lr_coef_df = pd.DataFrame({"Variable": lr_coef_names, "Coef": lr_coefs})
+print(lr_coef_df)
+```
+
+**Ridge**
+
+```{python}
+degrees_ridge = {'ridge_regression__alpha': [0.01, 0.1, 1, 10, 100]}
+
+gscv_ridge = GridSearchCV(ridge_pipeline, degrees_ridge, cv = 5, scoring='neg_root_mean_squared_error')
+
+gscv_ridge_fitted = gscv_ridge.fit(X,y)
+
+pd.DataFrame(data = {"degrees": [0.01, 0.1, 1, 10, 100], "scores": gscv_ridge_fitted.cv_results_['mean_test_score']})
+
+# Best lambda is 1
+
+ridge_pipeline2 = Pipeline(
+  [("preprocessing", ct),
+  ("ridge_regression", Ridge(alpha = 1))]
+)
+cv_ridge = cross_val_score(ridge_pipeline2, X, y, cv = 5, scoring = 'neg_root_mean_squared_error')
+avg_mse_ridge = -cv_ridge.mean()
+print(f'The expected MSE for prediciting 1989 salaries with just Career runs on ridge regression would be {round(avg_mse_ridge,2)}')
+```
+
+*Coefs* 
+
+```{python}
+ridge_fitted = ridge_pipeline.fit(X,y)
+
+ridge_coefs = ridge_fitted.named_steps['ridge_regression'].coef_
+ridge_coef_names = ridge_fitted.named_steps["preprocessing"].get_feature_names_out()
+ridge_coef_df = pd.DataFrame({"Variable": ridge_coef_names, "Coef": ridge_coefs})
+print(ridge_coef_df)
+```
+
+
+**Lasso**
+
+```{python}
+degrees_lasso = {'lasso_regression__alpha': [0.0001, 0.001, 0.01, 0.1, 1, 10, 100]}
+
+gscv_lasso = GridSearchCV(lasso_pipeline, degrees_lasso, cv = 5, scoring='neg_root_mean_squared_error')
+
+gscv_lasso_fitted = gscv_lasso.fit(X,y)
+
+pd.DataFrame(data = {"degrees": [0.0001,0.001, 0.01, 0.1, 1, 10, 100], "scores": gscv_lasso_fitted.cv_results_['mean_test_score']})
+
+# the best lambda for lasso is 0.0001
+lasso_pipeline = Pipeline(
+  [("preprocessing", ct),
+  ("lasso_regression", Lasso(alpha = 0.0001))]
+)
+
+cv_lasso = cross_val_score(lasso_pipeline, X, y, cv = 5, scoring = 'neg_root_mean_squared_error')
+avg_mse_lasso = -cv_lasso.mean()
+print(f'The expected MSE for prediciting 1989 salarieswith just Career Runs on lasso regression would be {round(avg_mse_lasso,2)}')
+```
+
+
+**Elastic**
+
+```{python}
+degrees_elastic = {'elastic_net__alpha': [0.001,0.01, 0.1, 1, 10, 100]}
+
+gscv_elastic = GridSearchCV(elastic_pipeline, degrees_elastic, cv = 5, scoring='neg_root_mean_squared_error')
+
+gscv_elastic_fitted = gscv_elastic.fit(X,y)
+
+pd.DataFrame(data = {"degrees": [0.001,0.01, 0.1, 1, 10, 100], "scores": gscv_elastic_fitted.cv_results_['mean_test_score']})
+
+# Best lambda for elastic is 0.01
+elastic_pipeline = Pipeline(
+  [("preprocessing", ct),
+  ("elastic_net", ElasticNet(alpha = 0.01))]
+)
+
+cv_elastic = cross_val_score(elastic_pipeline, X, y, cv = 5, scoring = 'neg_root_mean_squared_error')
+avg_mse_elastic = -cv_elastic.mean()
+print(f'The expected MSE for prediciting 1989 salaries with just Career Runs on elastic net would be {round(avg_mse_elastic,2)}')
+```
+
+
+# Five Numeric
+
+Career Runs, 1986 Hits, 1986 At Bats, Career Rbi, Number of Career Walks.
+**Linear**
+```{python}
+X = hitters[["CRuns", "Hits", "AtBat", "CWalks", "Years"]]
+y = hitters["Salary"]
+
+cv = cross_val_score(lr_pipeline, X, y, cv = 5, scoring = 'neg_root_mean_squared_error')
+avg_mse = -cv.mean()
+print(f'The expected MSE for prediciting 1989 salaries with "CRuns", "Hits", "AtBat", "CRBI", "CWalks" on linear regression would be {round(avg_mse,2)}')
+```
+
+*Coefs*
+
+```{python}
+lr_fitted = lr_pipeline.fit(X, y)
+
+lr_coefs = lr_fitted.named_steps['linear_regression'].coef_
+lr_coef_names = lr_fitted.named_steps["preprocessing"].get_feature_names_out()
+lr_coef_df = pd.DataFrame({"Variable": lr_coef_names, "Coef": lr_coefs})
+print(lr_coef_df)
+```
+
+**Ridge**
+```{python}
+degrees_ridge = {'ridge_regression__alpha': [0.01, 0.1, 1, 10, 100]}
+
+gscv_ridge = GridSearchCV(ridge_pipeline, degrees_ridge, cv = 5, scoring='neg_root_mean_squared_error')
+
+gscv_ridge_fitted = gscv_ridge.fit(X,y)
+
+pd.DataFrame(data = {"degrees": [0.01, 0.1, 1, 10, 100], "scores": gscv_ridge_fitted.cv_results_['mean_test_score']})
+
+# Best lambda is 1
+ridge_pipeline2 = Pipeline(
+  [("preprocessing", ct),
+  ("ridge_regression", Ridge(alpha = 1))]
+)
+cv_ridge = cross_val_score(ridge_pipeline2, X, y, cv = 5, scoring = 'neg_root_mean_squared_error')
+avg_mse_ridge = -cv_ridge.mean()
+print(f'The expected MSE for prediciting 1989 salaries with "CRuns", "Hits", "AtBat", "CRBI", "CWalks" on ridge regression would be {round(avg_mse_ridge,2)}')
+```
+
+*Coefs* 
+
+```{python}
+ridge_fitted = ridge_pipeline.fit(X,y)
+
+ridge_coefs = ridge_fitted.named_steps['ridge_regression'].coef_
+ridge_coef_names = ridge_fitted.named_steps["preprocessing"].get_feature_names_out()
+ridge_coef_df = pd.DataFrame({"Variable": ridge_coef_names, "Coef": ridge_coefs})
+print(ridge_coef_df)
+```
+
+**Lasso**
+
+```{python}
+degrees_lasso = {'lasso_regression__alpha': [0.0001, 0.001, 0.01, 0.1, 1, 10, 100]}
+
+gscv_lasso = GridSearchCV(lasso_pipeline, degrees_lasso, cv = 5, scoring='neg_root_mean_squared_error')
+
+gscv_lasso_fitted = gscv_lasso.fit(X,y)
+
+pd.DataFrame(data = {"degrees": [0.0001,0.001, 0.01, 0.1, 1, 10, 100], "scores": gscv_lasso_fitted.cv_results_['mean_test_score']})
+
+# the best lambda for lasso is 0.1
+lasso_pipeline = Pipeline(
+  [("preprocessing", ct),
+  ("lasso_regression", Lasso(alpha = 0.1))]
+)
+
+cv_lasso = cross_val_score(lasso_pipeline, X, y, cv = 5, scoring = 'neg_root_mean_squared_error')
+avg_mse_lasso = -cv_lasso.mean()
+print(f'The expected MSE for prediciting 1989 salaries with "CRuns", "Hits", "AtBat", "CRBI", "CWalks" on ridge regression would be {round(avg_mse_lasso,2)}')
+```
+
+**Elastic Net**
+
+```{python}
+degrees_elastic = {'elastic_net__alpha': [0.001,0.01, 0.1, 1, 10, 100]}
+
+gscv_elastic = GridSearchCV(elastic_pipeline, degrees_elastic, cv = 5, scoring='neg_root_mean_squared_error')
+
+gscv_elastic_fitted = gscv_elastic.fit(X,y)
+
+pd.DataFrame(data = {"degrees": [0.001,0.01, 0.1, 1, 10, 100], "scores": gscv_elastic_fitted.cv_results_['mean_test_score']})
+
+# Best lambda for elastic is 0.01
+elastic_pipeline = Pipeline(
+  [("preprocessing", ct),
+  ("elastic_net", ElasticNet(alpha = 0.01))]
+)
+
+cv_elastic = cross_val_score(elastic_pipeline, X, y, cv = 5, scoring = 'neg_root_mean_squared_error')
+avg_mse_elastic = -cv_elastic.mean()
+print(f'The expected MSE for prediciting 1989 salaries with "CRuns", "Hits", "AtBat", "CRBI", "CWalks" on elastic net would be {round(avg_mse_elastic,2)}')
+```
+
+# Categorical 
+
+The most important categorical variable appears to be the division (East/West) the player is in.
+
+*Rewriting Pipelines to include interaction*
+
+```{python}
+ct = ColumnTransformer(
+  [
+    ("dummify", 
+    OneHotEncoder(sparse_output = False, handle_unknown='ignore'),
+    make_column_selector(dtype_include=object)),
+    ("standardize", 
+    StandardScaler(), 
+    make_column_selector(dtype_include=np.number))
+  ],
+  remainder = "passthrough"
+).set_output(transform = "pandas")
+
+# CRuns", "Hits", "AtBat", "CRBI", "Years"
+ct_interaction = ColumnTransformer(
+    [
+        ("interaction", PolynomialFeatures(interaction_only = True), ["standardize__CRuns", "dummify__Division_E"]),
+        ("interaction2", PolynomialFeatures(interaction_only = True), ["standardize__Hits", "dummify__Division_E"]),
+        ("interaction3", PolynomialFeatures(interaction_only = True), ["standardize__AtBat", "dummify__Division_E"]),
+        ("interaction4", PolynomialFeatures(interaction_only = True), ["standardize__CRBI", "dummify__Division_E"]),
+        ("interaction5", PolynomialFeatures(interaction_only = True), ["standardize__CWalks", "dummify__Division_E"])
+    ],
+    remainder = 'drop'
+).set_output(transform = "pandas")
+
+lr_pipeline_int = Pipeline(
+  [("preprocessing", ct),
+  ("preprocessing2", ct_interaction),
+  ("linear_regression", LinearRegression())]
+)
+
+ridge_pipeline_int = Pipeline(
+  [("preprocessing", ct),
+  ("preprocessing2", ct_interaction),
+  ("ridge_regression", Ridge(alpha = 10))]
+)
+
+lasso_pipeline_int = Pipeline(
+  [("preprocessing", ct),
+  ("preprocessing2", ct_interaction),
+  ("lasso_regression", Lasso(alpha = 1))]
+)
+
+elastic_pipeline_int = Pipeline(
+  [("preprocessing", ct),
+  ("preprocessing2", ct_interaction),
+  ("elastic_net", ElasticNet(alpha = 0.1))]
+)
+```
+
+**Linear**
+
+```{python}
+X = hitters[["CRuns", "Hits", "AtBat", "CRBI", "CWalks", "Division"]]
+y = hitters["Salary"]
+
+cv = cross_val_score(lr_pipeline_int, X, y, cv = 5, scoring = 'neg_root_mean_squared_error')
+avg_mse = -cv.mean()
+print(f'The expected MSE for prediciting 1989 salaries with "CRuns", "Hits", "AtBat", "CRBI", "CWalks" and their interactions with Division on linear regression would be {round(avg_mse,2)}')
+```
+
+*Coefs*
+
+```{python}
+lr_fitted = lr_pipeline_int.fit(X, y)
+
+lr_coefs = lr_fitted.named_steps['linear_regression'].coef_
+lr_coef_names = lr_fitted.named_steps["preprocessing2"].get_feature_names_out()
+lr_coef_df = pd.DataFrame({"Variable": lr_coef_names, "Coef": lr_coefs})
+print(lr_coef_df)
+```
+
+**Ridge**
+
+```{python}
+degrees_ridge = {'ridge_regression__alpha': [0.01, 0.1, 1, 10, 100]}
+
+gscv_ridge = GridSearchCV(ridge_pipeline_int, degrees_ridge, cv = 5, scoring='neg_root_mean_squared_error')
+
+gscv_ridge_fitted = gscv_ridge.fit(X,y)
+
+pd.DataFrame(data = {"degrees": [0.01, 0.1, 1, 10, 100], "scores": gscv_ridge_fitted.cv_results_['mean_test_score']})
+
+# Best lambda is 10
+
+cv_ridge = cross_val_score(ridge_pipeline_int, X, y, cv = 5, scoring = 'neg_root_mean_squared_error')
+avg_mse_ridge = -cv_ridge.mean()
+print(f'The expected MSE for prediciting 1989 salaries with "CRuns", "Hits", "AtBat", "CRBI", "CWalks" and their interactions with Division on ridge regression would be {round(avg_mse_ridge,2)}')
+```
+
+*Coefs* 
+
+```{python}
+ridge_fitted = ridge_pipeline_int.fit(X,y)
+
+ridge_coefs = ridge_fitted.named_steps['ridge_regression'].coef_
+ridge_coef_names = ridge_fitted.named_steps["preprocessing2"].get_feature_names_out()
+ridge_coef_df = pd.DataFrame({"Variable": ridge_coef_names, "Coef": ridge_coefs})
+print(ridge_coef_df)
+```
+
+**Lasso**
+
+```{python}
+degrees_lasso = {'lasso_regression__alpha': [0.0001, 0.001, 0.01, 0.1, 1, 10, 100]}
+
+gscv_lasso = GridSearchCV(lasso_pipeline_int, degrees_lasso, cv = 5, scoring='neg_root_mean_squared_error')
+
+gscv_lasso_fitted = gscv_lasso.fit(X,y)
+
+pd.DataFrame(data = {"degrees": [0.0001,0.001, 0.01, 0.1, 1, 10, 100], "scores": gscv_lasso_fitted.cv_results_['mean_test_score']})
+
+# the best lambda for lasso is 1
+
+cv_lasso = cross_val_score(lasso_pipeline_int, X, y, cv = 5, scoring = 'neg_root_mean_squared_error')
+avg_mse_lasso = -cv_lasso.mean()
+print(f'The expected MSE for prediciting 1989 salaries with "CRuns", "Hits", "AtBat", "CRBI", "CWalks" and their interactions with Division on ridge regression would be {round(avg_mse_lasso,2)}')
+```
+
+**Elastic Net**
+
+```{python}
+degrees_elastic = {'elastic_net__alpha': [0.001,0.01, 0.1, 1, 10, 100]}
+
+gscv_elastic = GridSearchCV(elastic_pipeline_int, degrees_elastic, cv = 5, scoring='neg_root_mean_squared_error')
+
+gscv_elastic_fitted = gscv_elastic.fit(X,y)
+
+pd.DataFrame(data = {"degrees": [0.001,0.01, 0.1, 1, 10, 100], "scores": gscv_elastic_fitted.cv_results_['mean_test_score']})
+
+# Best lambda for elastic is 0.1
+
+cv_elastic = cross_val_score(elastic_pipeline_int, X, y, cv = 5, scoring = 'neg_root_mean_squared_error')
+avg_mse_elastic = -cv_elastic.mean()
+print(f'The expected MSE for prediciting 1989 salaries with "CRuns", "Hits", "AtBat", "CRBI", "CWalks" on elastic net would be {round(avg_mse_elastic,2)}')
+```
+
+# Model Selection
+
+Out of all the models, the one that performed best (had the smallest MSE) was the elastic model that contained the 5 best numeric variables along with their interactions with the best categorcial variable.
+
+## Part 3
+
+# A)
+The coefficients in the Ridge models typically had a lower absolute value than the coefficients in the ordinary regression model. This makes sense because of the peanalites added to the Betas in the penalized models. When the betas are penalized, their effect is "dampened" in a way, making the coefficients less extreme and better for generalization.
+
+# B)
+The lambdas and MSEs were both different for the lasso models in part 1 and part 2. This makes sense because each of the models were fit on different predictors, meaning that there will be different amounts estimates of one predictors given that another predictor is in the model, and some of those variables might cause the model to fit worse (large mse) or better (smaller mse)
+
+# C)
+It makes sense that the Elastic net regression always "wins" (has the smallest MSE) because we're penalizing the models in three different ways, this allows for corrections that help us from overfitting the model, making it more generalizable to fit different kinds of data.
+
+## Part 4
+
+```{python}
+X = hitters.drop(["Salary"], axis = 1)
+y = hitters["Salary"]
+
+elastic_pipeline_int = Pipeline(
+  [("preprocessing", ct),
+  ("preprocessing2", ct_interaction),
+  ("elastic_net", ElasticNet(alpha = 0.1))]
+)
+
+winner_fitted = elastic_pipeline_int.fit(X,y)
+
+winner_coefs = winner_fitted.named_steps['elastic_net'].coef_
+winner_coef_names = winner_fitted.named_steps["preprocessing2"].get_feature_names_out()
+winner_coef_df = pd.DataFrame({"Variable": winner_coef_names, "Coef": winner_coefs})
+print(winner_coef_df)
+
+cv_elastic = cross_val_score(elastic_pipeline_int, X, y, cv = 5, scoring = 'neg_root_mean_squared_error')
+avg_mse_elastic = -cv_elastic.mean()
+print(f'MSE: {round(avg_mse_elastic,2)}')
+```
+
+When we fit the elastic-interaction pipeline on all the data, we recieve coefficients for each of the selected variables along with their interaction with League. The reason that we don't have coefficients for the other variables in the dataset (although we fit on all the data) is because in our pipeline, we inptted instructions to "drop" the other variables that not been specified. We can see that on its own, it seems that for every one hit in 1986, a players salary increases the most (for given 1 unit increase).
+
+```{python}
+from plotnine import *
+```
+
+```{python}
+hitters_copy = hitters.copy()
+
+hitters_copy['predicted_salary'] = winner_fitted.predict(hitters.drop(["Salary"], axis = 1))
+
+hitters_copy['residuals'] = hitters_copy['Salary'] - hitters_copy['predicted_salary']
+```
+
+```{python}
+y_pred = winner_fitted.predict(hitters.drop(["Salary"], axis = 1))
+
+(ggplot(hitters_copy,
+aes(x = 'predicted_salary', y = 'residuals'))
++ geom_point()
+)
+```
+
+From the residuals x predicted plot, we are able to see sure signs of heteroskedasticity, meaning that as our predicted salary increases, the error for which we predict is greater. This makes sense with the variation in statisitcs of different players.

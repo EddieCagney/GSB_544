@@ -1,0 +1,1572 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.32">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Eddie Cagney">
+
+<title>GSB 544 Lab 6</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script><script src="Lab 6_files/libs/clipboard/clipboard.min.js"></script>
+<script src="Lab 6_files/libs/quarto-html/quarto.js" type="module"></script>
+<script src="Lab 6_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="Lab 6_files/libs/quarto-html/popper.min.js"></script>
+<script src="Lab 6_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="Lab 6_files/libs/quarto-html/anchor.min.js"></script>
+<link href="Lab 6_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="Lab 6_files/libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="Lab 6_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="Lab 6_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="Lab 6_files/libs/bootstrap/bootstrap-bb462d781dde1847d9e3ccf7736099dd.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
+
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
+
+
+</head>
+
+<body class="fullcontent quarto-light">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">GSB 544 Lab 6</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Eddie Cagney </p>
+          </div>
+  </div>
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="setup" class="level2">
+<h2 class="anchored" data-anchor-id="setup">Setup</h2>
+</section>
+<section id="loading-packages-and-data" class="level1">
+<h1>Loading packages and data</h1>
+<div id="c49e909c" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.pipeline <span class="im">import</span> Pipeline</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.compose <span class="im">import</span> make_column_selector, ColumnTransformer</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.preprocessing <span class="im">import</span> StandardScaler, OneHotEncoder, PolynomialFeatures</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.linear_model <span class="im">import</span> LinearRegression, Ridge, Lasso, ElasticNet </span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.model_selection <span class="im">import</span> train_test_split, cross_val_score, GridSearchCV</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.metrics <span class="im">import</span> r2_score</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div id="032a945e" class="cell" data-execution_count="2">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>hitters <span class="op">=</span> pd.read_csv(<span class="st">"C:/Users/Eddie/Documents/GSB 544/Data/Hitters.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+</section>
+<section id="cleaning" class="level1">
+<h1>Cleaning</h1>
+<p>There are not any variables that need adjusting or changing in their type but there were some missing values that needed to be removed in order to do proper analysis.</p>
+<div id="66e62693" class="cell" data-execution_count="3">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># dropping NAs</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>hitters <span class="op">=</span> hitters.dropna()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<section id="part-1" class="level2">
+<h2 class="anchored" data-anchor-id="part-1">Part 1</h2>
+</section>
+</section>
+<section id="a" class="level1">
+<h1>A)</h1>
+<p><strong>Linear Regression</strong></p>
+<div id="f133af50" class="cell" data-execution_count="4">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> hitters.drop([<span class="st">"Salary"</span>], axis <span class="op">=</span> <span class="dv">1</span>)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span> hitters[<span class="st">"Salary"</span>]</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>ct <span class="op">=</span> ColumnTransformer(</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  [</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"dummify"</span>, </span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    OneHotEncoder(sparse_output <span class="op">=</span> <span class="va">False</span>, handle_unknown<span class="op">=</span><span class="st">'ignore'</span>),</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    make_column_selector(dtype_include<span class="op">=</span><span class="bu">object</span>)),</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"standardize"</span>, </span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>    StandardScaler(), </span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    make_column_selector(dtype_include<span class="op">=</span>np.number))</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>  ],</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>  remainder <span class="op">=</span> <span class="st">"passthrough"</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>lr_pipeline <span class="op">=</span> Pipeline(</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>  [(<span class="st">"preprocessing"</span>, ct),</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>  (<span class="st">"linear_regression"</span>, LinearRegression())]</span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>lr_fitted <span class="op">=</span> lr_pipeline.fit(X, y)</span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>lr_coefs <span class="op">=</span> lr_fitted.named_steps[<span class="st">'linear_regression'</span>].coef_</span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>lr_coef_names <span class="op">=</span> lr_fitted.named_steps[<span class="st">"preprocessing"</span>].get_feature_names_out()</span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>lr_coef_df <span class="op">=</span> pd.DataFrame({<span class="st">"Variable"</span>: lr_coef_names, <span class="st">"Coef"</span>: lr_coefs})</span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(lr_coef_df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>                Variable        Coef
+0      dummify__League_A  -31.299712
+1      dummify__League_N   31.299712
+2    dummify__Division_E   58.424623
+3    dummify__Division_W  -58.424623
+4   dummify__NewLeague_A   12.381163
+5   dummify__NewLeague_N  -12.381163
+6     standardize__AtBat -291.094556
+7      standardize__Hits  337.830479
+8     standardize__HmRun   37.853837
+9      standardize__Runs  -60.572479
+10      standardize__RBI  -26.994984
+11    standardize__Walks  135.073897
+12    standardize__Years  -16.693359
+13   standardize__CAtBat -391.038655
+14    standardize__CHits   86.687617
+15   standardize__CHmRun  -14.181723
+16    standardize__CRuns  480.747135
+17     standardize__CRBI  260.689886
+18   standardize__CWalks -213.892259
+19  standardize__PutOuts   78.761296
+20  standardize__Assists   53.732490
+21   standardize__Errors  -22.160862</code></pre>
+</div>
+</div>
+<p>Some of the more important coefficients in this model belong to League variable, which is indicating that the average National league player is estimated to be paid about $31.29 thousand more than those in the American league. Also that being in the East Division creates an estimated $58.4 thousand more than that in the West Division. Also we see that as a player has more hits, their salary also increases seeing that for every one hit in 1986, the estimated salary of that player is expected to increase by $337.83 thousand dollars.</p>
+<p><em>Cross Validation</em></p>
+<div id="dcdc0fc0" class="cell" data-execution_count="5">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>cv <span class="op">=</span> cross_val_score(lr_pipeline, X, y, cv <span class="op">=</span> <span class="dv">5</span>, scoring <span class="op">=</span> <span class="st">'neg_root_mean_squared_error'</span>)</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>avg_mse <span class="op">=</span> <span class="op">-</span>cv.mean()</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f'The expected MSE for prediciting 1989 salaries would be </span><span class="sc">{</span><span class="bu">round</span>(avg_mse,<span class="dv">2</span>)<span class="sc">}</span><span class="ss">'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>The expected MSE for prediciting 1989 salaries would be 342.14</code></pre>
+</div>
+</div>
+</section>
+<section id="b" class="level1">
+<h1>B)</h1>
+<p><strong>Ridge Regression</strong></p>
+<p><em>Pipeline</em></p>
+<div id="5dfbb545" class="cell" data-execution_count="6">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>ridge_pipeline <span class="op">=</span> Pipeline(</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  [(<span class="st">"preprocessing"</span>, ct),</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  (<span class="st">"ridge_regression"</span>, Ridge(alpha <span class="op">=</span> <span class="dv">10</span>))]</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p><em>Tuning</em></p>
+<div id="e06293f6" class="cell" data-execution_count="7">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>degrees_ridge <span class="op">=</span> {<span class="st">'ridge_regression__alpha'</span>: [<span class="fl">0.01</span>, <span class="fl">0.1</span>, <span class="dv">1</span>, <span class="dv">10</span>, <span class="dv">100</span>]}</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>gscv_ridge <span class="op">=</span> GridSearchCV(ridge_pipeline, degrees_ridge, cv <span class="op">=</span> <span class="dv">5</span>, scoring<span class="op">=</span><span class="st">'neg_root_mean_squared_error'</span>)</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>gscv_ridge_fitted <span class="op">=</span> gscv_ridge.fit(X,y)</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>pd.DataFrame(data <span class="op">=</span> {<span class="st">"degrees"</span>: [<span class="fl">0.01</span>, <span class="fl">0.1</span>, <span class="dv">1</span>, <span class="dv">10</span>, <span class="dv">100</span>], <span class="st">"scores"</span>: gscv_ridge_fitted.cv_results_[<span class="st">'mean_test_score'</span>]})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="7">
+<div>
+
+
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">degrees</th>
+<th data-quarto-table-cell-role="th">scores</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>0.01</td>
+<td>-342.002641</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>0.10</td>
+<td>-341.173595</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>1.00</td>
+<td>-339.577840</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">3</td>
+<td>10.00</td>
+<td>-339.148205</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">4</td>
+<td>100.00</td>
+<td>-339.541992</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+<p>From tuning we are going to select 10 as our lambda in the Ridge Regression</p>
+<p><em>Pipeline fit</em></p>
+<div id="de4cc71e" class="cell" data-execution_count="8">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>ridge_fitted <span class="op">=</span> ridge_pipeline.fit(X,y)</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>ridge_coefs <span class="op">=</span> ridge_fitted.named_steps[<span class="st">'ridge_regression'</span>].coef_</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>ridge_coef_names <span class="op">=</span> ridge_fitted.named_steps[<span class="st">"preprocessing"</span>].get_feature_names_out()</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>ridge_coef_df <span class="op">=</span> pd.DataFrame({<span class="st">"Variable"</span>: ridge_coef_names, <span class="st">"Coef"</span>: ridge_coefs})</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(ridge_coef_df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>                Variable        Coef
+0      dummify__League_A  -24.414670
+1      dummify__League_N   24.414670
+2    dummify__Division_E   59.718252
+3    dummify__Division_W  -59.718252
+4   dummify__NewLeague_A    7.587131
+5   dummify__NewLeague_N   -7.587131
+6     standardize__AtBat -133.995915
+7      standardize__Hits  152.626598
+8     standardize__HmRun  -10.220972
+9      standardize__Runs   21.678558
+10      standardize__RBI   16.287711
+11    standardize__Walks   82.577291
+12    standardize__Years  -48.466257
+13   standardize__CAtBat  -20.190033
+14    standardize__CHits   97.384374
+15   standardize__CHmRun   58.336915
+16    standardize__CRuns  119.701712
+17     standardize__CRBI   92.471348
+18   standardize__CWalks  -93.932141
+19  standardize__PutOuts   75.307601
+20  standardize__Assists   28.966750
+21   standardize__Errors  -24.919062</code></pre>
+</div>
+</div>
+<p>Some of the more important coefficients in this model belong to League variable, which is indicating that the average National league player is estimated to be paid about $24.4 thousand more than those in the American league. Also that being in the East Division creates an estimated $59.71 thousand more than that in the West Division. Also we see that as a player has more hits, their salary also increases seeing that for every one hit in 1986, the estimated salary of that player is expected to increase by $152.62 thousand dollars.</p>
+<p><em>Cross Validation</em></p>
+<div id="68c45ff7" class="cell" data-execution_count="9">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>cv_ridge <span class="op">=</span> cross_val_score(ridge_pipeline, X, y, cv <span class="op">=</span> <span class="dv">5</span>, scoring <span class="op">=</span> <span class="st">'neg_root_mean_squared_error'</span>)</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>avg_mse_ridge <span class="op">=</span> <span class="op">-</span>cv_ridge.mean()</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f'The expected MSE for prediciting 1989 salaries would be </span><span class="sc">{</span><span class="bu">round</span>(avg_mse_ridge,<span class="dv">2</span>)<span class="sc">}</span><span class="ss">'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>The expected MSE for prediciting 1989 salaries would be 339.15</code></pre>
+</div>
+</div>
+</section>
+<section id="c" class="level1">
+<h1>C)</h1>
+<p><strong>Lasso Regression</strong></p>
+<p><em>Pipeline</em></p>
+<div id="f8575ad7" class="cell" data-execution_count="10">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>lasso_pipeline <span class="op">=</span> Pipeline(</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  [(<span class="st">"preprocessing"</span>, ct),</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  (<span class="st">"lasso_regression"</span>, Lasso(alpha <span class="op">=</span> <span class="dv">1</span>))]</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p><em>Tuning</em></p>
+<div id="18a13882" class="cell" data-execution_count="11">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>degrees_lasso <span class="op">=</span> {<span class="st">'lasso_regression__alpha'</span>: [<span class="fl">0.01</span>, <span class="fl">0.1</span>, <span class="dv">1</span>, <span class="dv">10</span>, <span class="dv">100</span>]}</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>gscv_lasso <span class="op">=</span> GridSearchCV(lasso_pipeline, degrees_lasso, cv <span class="op">=</span> <span class="dv">5</span>, scoring<span class="op">=</span><span class="st">'neg_root_mean_squared_error'</span>)</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>gscv_lasso_fitted <span class="op">=</span> gscv_lasso.fit(X,y)</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>pd.DataFrame(data <span class="op">=</span> {<span class="st">"degrees"</span>: [<span class="fl">0.01</span>, <span class="fl">0.1</span>, <span class="dv">1</span>, <span class="dv">10</span>, <span class="dv">100</span>], <span class="st">"scores"</span>: gscv_lasso_fitted.cv_results_[<span class="st">'mean_test_score'</span>]})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="11">
+<div>
+
+
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">degrees</th>
+<th data-quarto-table-cell-role="th">scores</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>0.01</td>
+<td>-341.897747</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>0.10</td>
+<td>-341.520466</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>1.00</td>
+<td>-340.331780</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">3</td>
+<td>10.00</td>
+<td>-341.838844</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">4</td>
+<td>100.00</td>
+<td>-368.770272</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+<p>The best lambda for the lasso regression is 1 as opposed to 10 in the ridge regression.</p>
+<p><em>Pipeline Fit</em></p>
+<div id="01d2d3c7" class="cell" data-execution_count="12">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>lasso_fitted <span class="op">=</span> lasso_pipeline.fit(X,y)</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>lasso_coefs <span class="op">=</span> lasso_fitted.named_steps[<span class="st">'lasso_regression'</span>].coef_</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>lasso_coef_names <span class="op">=</span> lasso_fitted.named_steps[<span class="st">"preprocessing"</span>].get_feature_names_out()</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>lasso_coef_df <span class="op">=</span> pd.DataFrame({<span class="st">"Variable"</span>: lasso_coef_names, <span class="st">"Coef"</span>: lasso_coefs})</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(lasso_coef_df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>                Variable          Coef
+0      dummify__League_A -3.582607e+01
+1      dummify__League_N  1.734720e-15
+2    dummify__Division_E  1.144130e+02
+3    dummify__Division_W -2.191014e-11
+4   dummify__NewLeague_A  0.000000e+00
+5   dummify__NewLeague_N -0.000000e+00
+6     standardize__AtBat -2.823710e+02
+7      standardize__Hits  3.043595e+02
+8     standardize__HmRun  1.112702e+01
+9      standardize__Runs -2.496651e+01
+10      standardize__RBI -0.000000e+00
+11    standardize__Walks  1.206953e+02
+12    standardize__Years -3.494815e+01
+13   standardize__CAtBat -1.626398e+02
+14    standardize__CHits  0.000000e+00
+15   standardize__CHmRun  1.422599e+01
+16    standardize__CRuns  3.755655e+02
+17     standardize__CRBI  1.926109e+02
+18   standardize__CWalks -1.896446e+02
+19  standardize__PutOuts  7.876037e+01
+20  standardize__Assists  4.199668e+01
+21   standardize__Errors -1.847938e+01</code></pre>
+</div>
+</div>
+<p>Some of the more important coefficients in this model belong to League variable, which is indicating that the average National league player is estimated to be paid about $35.88 thousand more than those in the American league. Also that being in the East Division creates an estimated $114.4 thousand more than that in the West Division. For the Hits variable, for every one hit the player got in 1986, a players salary is expected to increase by $304.5 thousand dollars.</p>
+<p><em>Cross Validation</em></p>
+<div id="041f1030" class="cell" data-execution_count="13">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>cv_lasso <span class="op">=</span> cross_val_score(lasso_pipeline, X, y, cv <span class="op">=</span> <span class="dv">5</span>, scoring <span class="op">=</span> <span class="st">'neg_root_mean_squared_error'</span>)</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>avg_mse_lasso <span class="op">=</span> <span class="op">-</span>cv_lasso.mean()</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f'The expected MSE for prediciting 1989 salaries would be </span><span class="sc">{</span><span class="bu">round</span>(avg_mse_lasso,<span class="dv">2</span>)<span class="sc">}</span><span class="ss">'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>The expected MSE for prediciting 1989 salaries would be 340.33</code></pre>
+</div>
+</div>
+</section>
+<section id="d" class="level1">
+<h1>D)</h1>
+<p><strong>Elastic Net</strong></p>
+<p><em>Pipeline</em></p>
+<div id="54dcf676" class="cell" data-execution_count="14">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>elastic_pipeline <span class="op">=</span> Pipeline(</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>  [(<span class="st">"preprocessing"</span>, ct),</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>  (<span class="st">"elastic_net"</span>, ElasticNet(alpha <span class="op">=</span> <span class="fl">0.1</span>))]</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p><em>Tuning</em></p>
+<div id="22f18a49" class="cell" data-execution_count="15">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>degrees_elastic <span class="op">=</span> {<span class="st">'elastic_net__alpha'</span>: [<span class="fl">0.01</span>, <span class="fl">0.1</span>, <span class="dv">1</span>, <span class="dv">10</span>, <span class="dv">100</span>]}</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>gscv_elastic <span class="op">=</span> GridSearchCV(elastic_pipeline, degrees_elastic, cv <span class="op">=</span> <span class="dv">5</span>, scoring<span class="op">=</span><span class="st">'neg_root_mean_squared_error'</span>)</span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>gscv_elastic_fitted <span class="op">=</span> gscv_elastic.fit(X,y)</span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>pd.DataFrame(data <span class="op">=</span> {<span class="st">"degrees"</span>: [<span class="fl">0.01</span>, <span class="fl">0.1</span>, <span class="dv">1</span>, <span class="dv">10</span>, <span class="dv">100</span>], <span class="st">"scores"</span>: gscv_elastic_fitted.cv_results_[<span class="st">'mean_test_score'</span>]})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="15">
+<div>
+
+
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">degrees</th>
+<th data-quarto-table-cell-role="th">scores</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>0.01</td>
+<td>-339.543657</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>0.10</td>
+<td>-339.161677</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>1.00</td>
+<td>-339.570065</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">3</td>
+<td>10.00</td>
+<td>-361.025460</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">4</td>
+<td>100.00</td>
+<td>-429.216974</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+<p>For the elastic net regression, the best lambda is 0.10 as it has the lowest RMSE.</p>
+<div id="40176b83" class="cell" data-execution_count="16">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>elastic_fitted <span class="op">=</span> elastic_pipeline.fit(X,y)</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>elastic_coefs <span class="op">=</span> elastic_fitted.named_steps[<span class="st">'elastic_net'</span>].coef_</span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>elastic_coef_names <span class="op">=</span> elastic_fitted.named_steps[<span class="st">"preprocessing"</span>].get_feature_names_out()</span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>elastic_coef_df <span class="op">=</span> pd.DataFrame({<span class="st">"Variable"</span>: elastic_coef_names, <span class="st">"Coef"</span>: elastic_coefs})</span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(elastic_coef_df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>                Variable        Coef
+0      dummify__League_A  -22.521602
+1      dummify__League_N   22.521573
+2    dummify__Division_E   58.707375
+3    dummify__Division_W  -58.707420
+4   dummify__NewLeague_A    5.524582
+5   dummify__NewLeague_N   -5.524591
+6     standardize__AtBat -110.447215
+7      standardize__Hits  133.105991
+8     standardize__HmRun  -11.515776
+9      standardize__Runs   24.960410
+10      standardize__RBI   18.000222
+11    standardize__Walks   75.746911
+12    standardize__Years  -44.664187
+13   standardize__CAtBat   -7.234341
+14    standardize__CHits   89.201242
+15   standardize__CHmRun   56.779291
+16    standardize__CRuns  103.876866
+17     standardize__CRBI   86.634306
+18   standardize__CWalks  -78.492142
+19  standardize__PutOuts   74.259204
+20  standardize__Assists   25.773608
+21   standardize__Errors  -24.242672</code></pre>
+</div>
+</div>
+<p>Some of the more important coefficients in this model belong to League variable, which is indicating that the average National league player is estimated to be paid about $22.5 thousand more than those in the American league. Also that being in the East Division creates an estimated $58.7 thousand more than that in the West Division. For the Hits variable, for every one hit the player got in 1986, a players salary is expected to increase by $133.1 thousand dollars.</p>
+<p><em>Cross Validation</em></p>
+<div id="021d5678" class="cell" data-execution_count="17">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>cv_elastic <span class="op">=</span> cross_val_score(elastic_pipeline, X, y, cv <span class="op">=</span> <span class="dv">5</span>, scoring <span class="op">=</span> <span class="st">'neg_root_mean_squared_error'</span>)</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>avg_mse_elastic <span class="op">=</span> <span class="op">-</span>cv_elastic.mean()</span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f'The expected MSE for prediciting 1989 salaries would be </span><span class="sc">{</span><span class="bu">round</span>(avg_mse_elastic,<span class="dv">2</span>)<span class="sc">}</span><span class="ss">'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>The expected MSE for prediciting 1989 salaries would be 339.16</code></pre>
+</div>
+</div>
+<section id="part-2" class="level2">
+<h2 class="anchored" data-anchor-id="part-2">Part 2</h2>
+</section>
+</section>
+<section id="numeric" class="level1">
+<h1>Numeric</h1>
+<p>The most important numeric variable seems to be Career Runs, this is because of the high coefficients in every model. Although hits in 1986 does have a larger estimated impact per one hit than Career runs (per run) in some models, looking at all the models as a whole we can see that they are competing for the largest effect but in the lasso regression where the other variables that don’t add predictiing power are cancelled out, we see a larger coefficient for Career runs, so thats why it is being selected as the most important numeric variable. <strong>Linear</strong></p>
+<div id="6cbb1ff0" class="cell" data-execution_count="18">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> hitters[[<span class="st">"CRuns"</span>]]</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span> hitters[<span class="st">"Salary"</span>]</span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>cv <span class="op">=</span> cross_val_score(lr_pipeline, X, y, cv <span class="op">=</span> <span class="dv">5</span>, scoring <span class="op">=</span> <span class="st">'neg_root_mean_squared_error'</span>)</span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>avg_mse <span class="op">=</span> <span class="op">-</span>cv.mean()</span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f'The expected MSE for prediciting 1989 salaries with just Career Runs with linear regression would be </span><span class="sc">{</span><span class="bu">round</span>(avg_mse,<span class="dv">2</span>)<span class="sc">}</span><span class="ss">'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>The expected MSE for prediciting 1989 salaries with just Career Runs with linear regression would be 368.59</code></pre>
+</div>
+</div>
+<p><em>Coefs</em></p>
+<div id="0c358dc3" class="cell" data-execution_count="19">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>lr_fitted <span class="op">=</span> lr_pipeline.fit(X, y)</span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>lr_coefs <span class="op">=</span> lr_fitted.named_steps[<span class="st">'linear_regression'</span>].coef_</span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>lr_coef_names <span class="op">=</span> lr_fitted.named_steps[<span class="st">"preprocessing"</span>].get_feature_names_out()</span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>lr_coef_df <span class="op">=</span> pd.DataFrame({<span class="st">"Variable"</span>: lr_coef_names, <span class="st">"Coef"</span>: lr_coefs})</span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(lr_coef_df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>             Variable        Coef
+0  standardize__CRuns  253.351392</code></pre>
+</div>
+</div>
+<p><strong>Ridge</strong></p>
+<div id="ec55aa46" class="cell" data-execution_count="20">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>degrees_ridge <span class="op">=</span> {<span class="st">'ridge_regression__alpha'</span>: [<span class="fl">0.01</span>, <span class="fl">0.1</span>, <span class="dv">1</span>, <span class="dv">10</span>, <span class="dv">100</span>]}</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>gscv_ridge <span class="op">=</span> GridSearchCV(ridge_pipeline, degrees_ridge, cv <span class="op">=</span> <span class="dv">5</span>, scoring<span class="op">=</span><span class="st">'neg_root_mean_squared_error'</span>)</span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>gscv_ridge_fitted <span class="op">=</span> gscv_ridge.fit(X,y)</span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a>pd.DataFrame(data <span class="op">=</span> {<span class="st">"degrees"</span>: [<span class="fl">0.01</span>, <span class="fl">0.1</span>, <span class="dv">1</span>, <span class="dv">10</span>, <span class="dv">100</span>], <span class="st">"scores"</span>: gscv_ridge_fitted.cv_results_[<span class="st">'mean_test_score'</span>]})</span>
+<span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-9"><a href="#cb30-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Best lambda is 1</span></span>
+<span id="cb30-10"><a href="#cb30-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-11"><a href="#cb30-11" aria-hidden="true" tabindex="-1"></a>ridge_pipeline2 <span class="op">=</span> Pipeline(</span>
+<span id="cb30-12"><a href="#cb30-12" aria-hidden="true" tabindex="-1"></a>  [(<span class="st">"preprocessing"</span>, ct),</span>
+<span id="cb30-13"><a href="#cb30-13" aria-hidden="true" tabindex="-1"></a>  (<span class="st">"ridge_regression"</span>, Ridge(alpha <span class="op">=</span> <span class="dv">1</span>))]</span>
+<span id="cb30-14"><a href="#cb30-14" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb30-15"><a href="#cb30-15" aria-hidden="true" tabindex="-1"></a>cv_ridge <span class="op">=</span> cross_val_score(ridge_pipeline2, X, y, cv <span class="op">=</span> <span class="dv">5</span>, scoring <span class="op">=</span> <span class="st">'neg_root_mean_squared_error'</span>)</span>
+<span id="cb30-16"><a href="#cb30-16" aria-hidden="true" tabindex="-1"></a>avg_mse_ridge <span class="op">=</span> <span class="op">-</span>cv_ridge.mean()</span>
+<span id="cb30-17"><a href="#cb30-17" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f'The expected MSE for prediciting 1989 salaries with just Career runs on ridge regression would be </span><span class="sc">{</span><span class="bu">round</span>(avg_mse_ridge,<span class="dv">2</span>)<span class="sc">}</span><span class="ss">'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>The expected MSE for prediciting 1989 salaries with just Career runs on ridge regression would be 368.58</code></pre>
+</div>
+</div>
+<p><em>Coefs</em></p>
+<div id="ef7e26d8" class="cell" data-execution_count="21">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>ridge_fitted <span class="op">=</span> ridge_pipeline.fit(X,y)</span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>ridge_coefs <span class="op">=</span> ridge_fitted.named_steps[<span class="st">'ridge_regression'</span>].coef_</span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>ridge_coef_names <span class="op">=</span> ridge_fitted.named_steps[<span class="st">"preprocessing"</span>].get_feature_names_out()</span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a>ridge_coef_df <span class="op">=</span> pd.DataFrame({<span class="st">"Variable"</span>: ridge_coef_names, <span class="st">"Coef"</span>: ridge_coefs})</span>
+<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(ridge_coef_df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>             Variable        Coef
+0  standardize__CRuns  244.071121</code></pre>
+</div>
+</div>
+<p><strong>Lasso</strong></p>
+<div id="7513e007" class="cell" data-execution_count="22">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>degrees_lasso <span class="op">=</span> {<span class="st">'lasso_regression__alpha'</span>: [<span class="fl">0.0001</span>, <span class="fl">0.001</span>, <span class="fl">0.01</span>, <span class="fl">0.1</span>, <span class="dv">1</span>, <span class="dv">10</span>, <span class="dv">100</span>]}</span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>gscv_lasso <span class="op">=</span> GridSearchCV(lasso_pipeline, degrees_lasso, cv <span class="op">=</span> <span class="dv">5</span>, scoring<span class="op">=</span><span class="st">'neg_root_mean_squared_error'</span>)</span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>gscv_lasso_fitted <span class="op">=</span> gscv_lasso.fit(X,y)</span>
+<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-7"><a href="#cb34-7" aria-hidden="true" tabindex="-1"></a>pd.DataFrame(data <span class="op">=</span> {<span class="st">"degrees"</span>: [<span class="fl">0.0001</span>,<span class="fl">0.001</span>, <span class="fl">0.01</span>, <span class="fl">0.1</span>, <span class="dv">1</span>, <span class="dv">10</span>, <span class="dv">100</span>], <span class="st">"scores"</span>: gscv_lasso_fitted.cv_results_[<span class="st">'mean_test_score'</span>]})</span>
+<span id="cb34-8"><a href="#cb34-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-9"><a href="#cb34-9" aria-hidden="true" tabindex="-1"></a><span class="co"># the best lambda for lasso is 0.0001</span></span>
+<span id="cb34-10"><a href="#cb34-10" aria-hidden="true" tabindex="-1"></a>lasso_pipeline <span class="op">=</span> Pipeline(</span>
+<span id="cb34-11"><a href="#cb34-11" aria-hidden="true" tabindex="-1"></a>  [(<span class="st">"preprocessing"</span>, ct),</span>
+<span id="cb34-12"><a href="#cb34-12" aria-hidden="true" tabindex="-1"></a>  (<span class="st">"lasso_regression"</span>, Lasso(alpha <span class="op">=</span> <span class="fl">0.0001</span>))]</span>
+<span id="cb34-13"><a href="#cb34-13" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb34-14"><a href="#cb34-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-15"><a href="#cb34-15" aria-hidden="true" tabindex="-1"></a>cv_lasso <span class="op">=</span> cross_val_score(lasso_pipeline, X, y, cv <span class="op">=</span> <span class="dv">5</span>, scoring <span class="op">=</span> <span class="st">'neg_root_mean_squared_error'</span>)</span>
+<span id="cb34-16"><a href="#cb34-16" aria-hidden="true" tabindex="-1"></a>avg_mse_lasso <span class="op">=</span> <span class="op">-</span>cv_lasso.mean()</span>
+<span id="cb34-17"><a href="#cb34-17" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f'The expected MSE for prediciting 1989 salarieswith just Career Runs on lasso regression would be </span><span class="sc">{</span><span class="bu">round</span>(avg_mse_lasso,<span class="dv">2</span>)<span class="sc">}</span><span class="ss">'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>The expected MSE for prediciting 1989 salarieswith just Career Runs on lasso regression would be 368.59</code></pre>
+</div>
+</div>
+<p><strong>Elastic</strong></p>
+<div id="a431d458" class="cell" data-execution_count="23">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>degrees_elastic <span class="op">=</span> {<span class="st">'elastic_net__alpha'</span>: [<span class="fl">0.001</span>,<span class="fl">0.01</span>, <span class="fl">0.1</span>, <span class="dv">1</span>, <span class="dv">10</span>, <span class="dv">100</span>]}</span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>gscv_elastic <span class="op">=</span> GridSearchCV(elastic_pipeline, degrees_elastic, cv <span class="op">=</span> <span class="dv">5</span>, scoring<span class="op">=</span><span class="st">'neg_root_mean_squared_error'</span>)</span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a>gscv_elastic_fitted <span class="op">=</span> gscv_elastic.fit(X,y)</span>
+<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-7"><a href="#cb36-7" aria-hidden="true" tabindex="-1"></a>pd.DataFrame(data <span class="op">=</span> {<span class="st">"degrees"</span>: [<span class="fl">0.001</span>,<span class="fl">0.01</span>, <span class="fl">0.1</span>, <span class="dv">1</span>, <span class="dv">10</span>, <span class="dv">100</span>], <span class="st">"scores"</span>: gscv_elastic_fitted.cv_results_[<span class="st">'mean_test_score'</span>]})</span>
+<span id="cb36-8"><a href="#cb36-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-9"><a href="#cb36-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Best lambda for elastic is 0.01</span></span>
+<span id="cb36-10"><a href="#cb36-10" aria-hidden="true" tabindex="-1"></a>elastic_pipeline <span class="op">=</span> Pipeline(</span>
+<span id="cb36-11"><a href="#cb36-11" aria-hidden="true" tabindex="-1"></a>  [(<span class="st">"preprocessing"</span>, ct),</span>
+<span id="cb36-12"><a href="#cb36-12" aria-hidden="true" tabindex="-1"></a>  (<span class="st">"elastic_net"</span>, ElasticNet(alpha <span class="op">=</span> <span class="fl">0.01</span>))]</span>
+<span id="cb36-13"><a href="#cb36-13" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb36-14"><a href="#cb36-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-15"><a href="#cb36-15" aria-hidden="true" tabindex="-1"></a>cv_elastic <span class="op">=</span> cross_val_score(elastic_pipeline, X, y, cv <span class="op">=</span> <span class="dv">5</span>, scoring <span class="op">=</span> <span class="st">'neg_root_mean_squared_error'</span>)</span>
+<span id="cb36-16"><a href="#cb36-16" aria-hidden="true" tabindex="-1"></a>avg_mse_elastic <span class="op">=</span> <span class="op">-</span>cv_elastic.mean()</span>
+<span id="cb36-17"><a href="#cb36-17" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f'The expected MSE for prediciting 1989 salaries with just Career Runs on elastic net would be </span><span class="sc">{</span><span class="bu">round</span>(avg_mse_elastic,<span class="dv">2</span>)<span class="sc">}</span><span class="ss">'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>The expected MSE for prediciting 1989 salaries with just Career Runs on elastic net would be 368.58</code></pre>
+</div>
+</div>
+</section>
+<section id="five-numeric" class="level1">
+<h1>Five Numeric</h1>
+<p>Career Runs, 1986 Hits, 1986 At Bats, Career Rbi, Number of Career Walks. <strong>Linear</strong></p>
+<div id="911024ea" class="cell" data-execution_count="24">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> hitters[[<span class="st">"CRuns"</span>, <span class="st">"Hits"</span>, <span class="st">"AtBat"</span>, <span class="st">"CWalks"</span>, <span class="st">"Years"</span>]]</span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span> hitters[<span class="st">"Salary"</span>]</span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>cv <span class="op">=</span> cross_val_score(lr_pipeline, X, y, cv <span class="op">=</span> <span class="dv">5</span>, scoring <span class="op">=</span> <span class="st">'neg_root_mean_squared_error'</span>)</span>
+<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a>avg_mse <span class="op">=</span> <span class="op">-</span>cv.mean()</span>
+<span id="cb38-6"><a href="#cb38-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f'The expected MSE for prediciting 1989 salaries with "CRuns", "Hits", "AtBat", "CRBI", "CWalks" on linear regression would be </span><span class="sc">{</span><span class="bu">round</span>(avg_mse,<span class="dv">2</span>)<span class="sc">}</span><span class="ss">'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>The expected MSE for prediciting 1989 salaries with "CRuns", "Hits", "AtBat", "CRBI", "CWalks" on linear regression would be 349.18</code></pre>
+</div>
+</div>
+<p><em>Coefs</em></p>
+<div id="28c5a218" class="cell" data-execution_count="25">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>lr_fitted <span class="op">=</span> lr_pipeline.fit(X, y)</span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>lr_coefs <span class="op">=</span> lr_fitted.named_steps[<span class="st">'linear_regression'</span>].coef_</span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>lr_coef_names <span class="op">=</span> lr_fitted.named_steps[<span class="st">"preprocessing"</span>].get_feature_names_out()</span>
+<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a>lr_coef_df <span class="op">=</span> pd.DataFrame({<span class="st">"Variable"</span>: lr_coef_names, <span class="st">"Coef"</span>: lr_coefs})</span>
+<span id="cb40-6"><a href="#cb40-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(lr_coef_df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>              Variable        Coef
+0   standardize__CRuns  285.884882
+1    standardize__Hits  337.520939
+2   standardize__AtBat -216.274745
+3  standardize__CWalks   14.467892
+4   standardize__Years  -85.862904</code></pre>
+</div>
+</div>
+<p><strong>Ridge</strong></p>
+<div id="88db24e4" class="cell" data-execution_count="26">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>degrees_ridge <span class="op">=</span> {<span class="st">'ridge_regression__alpha'</span>: [<span class="fl">0.01</span>, <span class="fl">0.1</span>, <span class="dv">1</span>, <span class="dv">10</span>, <span class="dv">100</span>]}</span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>gscv_ridge <span class="op">=</span> GridSearchCV(ridge_pipeline, degrees_ridge, cv <span class="op">=</span> <span class="dv">5</span>, scoring<span class="op">=</span><span class="st">'neg_root_mean_squared_error'</span>)</span>
+<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a>gscv_ridge_fitted <span class="op">=</span> gscv_ridge.fit(X,y)</span>
+<span id="cb42-6"><a href="#cb42-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-7"><a href="#cb42-7" aria-hidden="true" tabindex="-1"></a>pd.DataFrame(data <span class="op">=</span> {<span class="st">"degrees"</span>: [<span class="fl">0.01</span>, <span class="fl">0.1</span>, <span class="dv">1</span>, <span class="dv">10</span>, <span class="dv">100</span>], <span class="st">"scores"</span>: gscv_ridge_fitted.cv_results_[<span class="st">'mean_test_score'</span>]})</span>
+<span id="cb42-8"><a href="#cb42-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-9"><a href="#cb42-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Best lambda is 1</span></span>
+<span id="cb42-10"><a href="#cb42-10" aria-hidden="true" tabindex="-1"></a>ridge_pipeline2 <span class="op">=</span> Pipeline(</span>
+<span id="cb42-11"><a href="#cb42-11" aria-hidden="true" tabindex="-1"></a>  [(<span class="st">"preprocessing"</span>, ct),</span>
+<span id="cb42-12"><a href="#cb42-12" aria-hidden="true" tabindex="-1"></a>  (<span class="st">"ridge_regression"</span>, Ridge(alpha <span class="op">=</span> <span class="dv">1</span>))]</span>
+<span id="cb42-13"><a href="#cb42-13" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb42-14"><a href="#cb42-14" aria-hidden="true" tabindex="-1"></a>cv_ridge <span class="op">=</span> cross_val_score(ridge_pipeline2, X, y, cv <span class="op">=</span> <span class="dv">5</span>, scoring <span class="op">=</span> <span class="st">'neg_root_mean_squared_error'</span>)</span>
+<span id="cb42-15"><a href="#cb42-15" aria-hidden="true" tabindex="-1"></a>avg_mse_ridge <span class="op">=</span> <span class="op">-</span>cv_ridge.mean()</span>
+<span id="cb42-16"><a href="#cb42-16" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f'The expected MSE for prediciting 1989 salaries with "CRuns", "Hits", "AtBat", "CRBI", "CWalks" on ridge regression would be </span><span class="sc">{</span><span class="bu">round</span>(avg_mse_ridge,<span class="dv">2</span>)<span class="sc">}</span><span class="ss">'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>The expected MSE for prediciting 1989 salaries with "CRuns", "Hits", "AtBat", "CRBI", "CWalks" on ridge regression would be 348.24</code></pre>
+</div>
+</div>
+<p><em>Coefs</em></p>
+<div id="5de6b464" class="cell" data-execution_count="27">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>ridge_fitted <span class="op">=</span> ridge_pipeline.fit(X,y)</span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>ridge_coefs <span class="op">=</span> ridge_fitted.named_steps[<span class="st">'ridge_regression'</span>].coef_</span>
+<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a>ridge_coef_names <span class="op">=</span> ridge_fitted.named_steps[<span class="st">"preprocessing"</span>].get_feature_names_out()</span>
+<span id="cb44-5"><a href="#cb44-5" aria-hidden="true" tabindex="-1"></a>ridge_coef_df <span class="op">=</span> pd.DataFrame({<span class="st">"Variable"</span>: ridge_coef_names, <span class="st">"Coef"</span>: ridge_coefs})</span>
+<span id="cb44-6"><a href="#cb44-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(ridge_coef_df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>              Variable        Coef
+0   standardize__CRuns  208.102302
+1    standardize__Hits  202.208993
+2   standardize__AtBat  -69.200712
+3  standardize__CWalks   43.539884
+4   standardize__Years  -39.862753</code></pre>
+</div>
+</div>
+<p><strong>Lasso</strong></p>
+<div id="8c1334af" class="cell" data-execution_count="28">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>degrees_lasso <span class="op">=</span> {<span class="st">'lasso_regression__alpha'</span>: [<span class="fl">0.0001</span>, <span class="fl">0.001</span>, <span class="fl">0.01</span>, <span class="fl">0.1</span>, <span class="dv">1</span>, <span class="dv">10</span>, <span class="dv">100</span>]}</span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a>gscv_lasso <span class="op">=</span> GridSearchCV(lasso_pipeline, degrees_lasso, cv <span class="op">=</span> <span class="dv">5</span>, scoring<span class="op">=</span><span class="st">'neg_root_mean_squared_error'</span>)</span>
+<span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-5"><a href="#cb46-5" aria-hidden="true" tabindex="-1"></a>gscv_lasso_fitted <span class="op">=</span> gscv_lasso.fit(X,y)</span>
+<span id="cb46-6"><a href="#cb46-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-7"><a href="#cb46-7" aria-hidden="true" tabindex="-1"></a>pd.DataFrame(data <span class="op">=</span> {<span class="st">"degrees"</span>: [<span class="fl">0.0001</span>,<span class="fl">0.001</span>, <span class="fl">0.01</span>, <span class="fl">0.1</span>, <span class="dv">1</span>, <span class="dv">10</span>, <span class="dv">100</span>], <span class="st">"scores"</span>: gscv_lasso_fitted.cv_results_[<span class="st">'mean_test_score'</span>]})</span>
+<span id="cb46-8"><a href="#cb46-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-9"><a href="#cb46-9" aria-hidden="true" tabindex="-1"></a><span class="co"># the best lambda for lasso is 0.1</span></span>
+<span id="cb46-10"><a href="#cb46-10" aria-hidden="true" tabindex="-1"></a>lasso_pipeline <span class="op">=</span> Pipeline(</span>
+<span id="cb46-11"><a href="#cb46-11" aria-hidden="true" tabindex="-1"></a>  [(<span class="st">"preprocessing"</span>, ct),</span>
+<span id="cb46-12"><a href="#cb46-12" aria-hidden="true" tabindex="-1"></a>  (<span class="st">"lasso_regression"</span>, Lasso(alpha <span class="op">=</span> <span class="fl">0.1</span>))]</span>
+<span id="cb46-13"><a href="#cb46-13" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb46-14"><a href="#cb46-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-15"><a href="#cb46-15" aria-hidden="true" tabindex="-1"></a>cv_lasso <span class="op">=</span> cross_val_score(lasso_pipeline, X, y, cv <span class="op">=</span> <span class="dv">5</span>, scoring <span class="op">=</span> <span class="st">'neg_root_mean_squared_error'</span>)</span>
+<span id="cb46-16"><a href="#cb46-16" aria-hidden="true" tabindex="-1"></a>avg_mse_lasso <span class="op">=</span> <span class="op">-</span>cv_lasso.mean()</span>
+<span id="cb46-17"><a href="#cb46-17" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f'The expected MSE for prediciting 1989 salaries with "CRuns", "Hits", "AtBat", "CRBI", "CWalks" on ridge regression would be </span><span class="sc">{</span><span class="bu">round</span>(avg_mse_lasso,<span class="dv">2</span>)<span class="sc">}</span><span class="ss">'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>The expected MSE for prediciting 1989 salaries with "CRuns", "Hits", "AtBat", "CRBI", "CWalks" on ridge regression would be 349.09</code></pre>
+</div>
+</div>
+<p><strong>Elastic Net</strong></p>
+<div id="96198d2d" class="cell" data-execution_count="29">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>degrees_elastic <span class="op">=</span> {<span class="st">'elastic_net__alpha'</span>: [<span class="fl">0.001</span>,<span class="fl">0.01</span>, <span class="fl">0.1</span>, <span class="dv">1</span>, <span class="dv">10</span>, <span class="dv">100</span>]}</span>
+<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a>gscv_elastic <span class="op">=</span> GridSearchCV(elastic_pipeline, degrees_elastic, cv <span class="op">=</span> <span class="dv">5</span>, scoring<span class="op">=</span><span class="st">'neg_root_mean_squared_error'</span>)</span>
+<span id="cb48-4"><a href="#cb48-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb48-5"><a href="#cb48-5" aria-hidden="true" tabindex="-1"></a>gscv_elastic_fitted <span class="op">=</span> gscv_elastic.fit(X,y)</span>
+<span id="cb48-6"><a href="#cb48-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb48-7"><a href="#cb48-7" aria-hidden="true" tabindex="-1"></a>pd.DataFrame(data <span class="op">=</span> {<span class="st">"degrees"</span>: [<span class="fl">0.001</span>,<span class="fl">0.01</span>, <span class="fl">0.1</span>, <span class="dv">1</span>, <span class="dv">10</span>, <span class="dv">100</span>], <span class="st">"scores"</span>: gscv_elastic_fitted.cv_results_[<span class="st">'mean_test_score'</span>]})</span>
+<span id="cb48-8"><a href="#cb48-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb48-9"><a href="#cb48-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Best lambda for elastic is 0.01</span></span>
+<span id="cb48-10"><a href="#cb48-10" aria-hidden="true" tabindex="-1"></a>elastic_pipeline <span class="op">=</span> Pipeline(</span>
+<span id="cb48-11"><a href="#cb48-11" aria-hidden="true" tabindex="-1"></a>  [(<span class="st">"preprocessing"</span>, ct),</span>
+<span id="cb48-12"><a href="#cb48-12" aria-hidden="true" tabindex="-1"></a>  (<span class="st">"elastic_net"</span>, ElasticNet(alpha <span class="op">=</span> <span class="fl">0.01</span>))]</span>
+<span id="cb48-13"><a href="#cb48-13" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb48-14"><a href="#cb48-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb48-15"><a href="#cb48-15" aria-hidden="true" tabindex="-1"></a>cv_elastic <span class="op">=</span> cross_val_score(elastic_pipeline, X, y, cv <span class="op">=</span> <span class="dv">5</span>, scoring <span class="op">=</span> <span class="st">'neg_root_mean_squared_error'</span>)</span>
+<span id="cb48-16"><a href="#cb48-16" aria-hidden="true" tabindex="-1"></a>avg_mse_elastic <span class="op">=</span> <span class="op">-</span>cv_elastic.mean()</span>
+<span id="cb48-17"><a href="#cb48-17" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f'The expected MSE for prediciting 1989 salaries with "CRuns", "Hits", "AtBat", "CRBI", "CWalks" on elastic net would be </span><span class="sc">{</span><span class="bu">round</span>(avg_mse_elastic,<span class="dv">2</span>)<span class="sc">}</span><span class="ss">'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>The expected MSE for prediciting 1989 salaries with "CRuns", "Hits", "AtBat", "CRBI", "CWalks" on elastic net would be 348.2</code></pre>
+</div>
+</div>
+</section>
+<section id="categorical" class="level1">
+<h1>Categorical</h1>
+<p>The most important categorical variable appears to be the division (East/West) the player is in.</p>
+<p><em>Rewriting Pipelines to include interaction</em></p>
+<div id="9f013751" class="cell" data-execution_count="30">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>ct <span class="op">=</span> ColumnTransformer(</span>
+<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a>  [</span>
+<span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"dummify"</span>, </span>
+<span id="cb50-4"><a href="#cb50-4" aria-hidden="true" tabindex="-1"></a>    OneHotEncoder(sparse_output <span class="op">=</span> <span class="va">False</span>, handle_unknown<span class="op">=</span><span class="st">'ignore'</span>),</span>
+<span id="cb50-5"><a href="#cb50-5" aria-hidden="true" tabindex="-1"></a>    make_column_selector(dtype_include<span class="op">=</span><span class="bu">object</span>)),</span>
+<span id="cb50-6"><a href="#cb50-6" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"standardize"</span>, </span>
+<span id="cb50-7"><a href="#cb50-7" aria-hidden="true" tabindex="-1"></a>    StandardScaler(), </span>
+<span id="cb50-8"><a href="#cb50-8" aria-hidden="true" tabindex="-1"></a>    make_column_selector(dtype_include<span class="op">=</span>np.number))</span>
+<span id="cb50-9"><a href="#cb50-9" aria-hidden="true" tabindex="-1"></a>  ],</span>
+<span id="cb50-10"><a href="#cb50-10" aria-hidden="true" tabindex="-1"></a>  remainder <span class="op">=</span> <span class="st">"passthrough"</span></span>
+<span id="cb50-11"><a href="#cb50-11" aria-hidden="true" tabindex="-1"></a>).set_output(transform <span class="op">=</span> <span class="st">"pandas"</span>)</span>
+<span id="cb50-12"><a href="#cb50-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb50-13"><a href="#cb50-13" aria-hidden="true" tabindex="-1"></a><span class="co"># CRuns", "Hits", "AtBat", "CRBI", "Years"</span></span>
+<span id="cb50-14"><a href="#cb50-14" aria-hidden="true" tabindex="-1"></a>ct_interaction <span class="op">=</span> ColumnTransformer(</span>
+<span id="cb50-15"><a href="#cb50-15" aria-hidden="true" tabindex="-1"></a>    [</span>
+<span id="cb50-16"><a href="#cb50-16" aria-hidden="true" tabindex="-1"></a>        (<span class="st">"interaction"</span>, PolynomialFeatures(interaction_only <span class="op">=</span> <span class="va">True</span>), [<span class="st">"standardize__CRuns"</span>, <span class="st">"dummify__Division_E"</span>]),</span>
+<span id="cb50-17"><a href="#cb50-17" aria-hidden="true" tabindex="-1"></a>        (<span class="st">"interaction2"</span>, PolynomialFeatures(interaction_only <span class="op">=</span> <span class="va">True</span>), [<span class="st">"standardize__Hits"</span>, <span class="st">"dummify__Division_E"</span>]),</span>
+<span id="cb50-18"><a href="#cb50-18" aria-hidden="true" tabindex="-1"></a>        (<span class="st">"interaction3"</span>, PolynomialFeatures(interaction_only <span class="op">=</span> <span class="va">True</span>), [<span class="st">"standardize__AtBat"</span>, <span class="st">"dummify__Division_E"</span>]),</span>
+<span id="cb50-19"><a href="#cb50-19" aria-hidden="true" tabindex="-1"></a>        (<span class="st">"interaction4"</span>, PolynomialFeatures(interaction_only <span class="op">=</span> <span class="va">True</span>), [<span class="st">"standardize__CRBI"</span>, <span class="st">"dummify__Division_E"</span>]),</span>
+<span id="cb50-20"><a href="#cb50-20" aria-hidden="true" tabindex="-1"></a>        (<span class="st">"interaction5"</span>, PolynomialFeatures(interaction_only <span class="op">=</span> <span class="va">True</span>), [<span class="st">"standardize__CWalks"</span>, <span class="st">"dummify__Division_E"</span>])</span>
+<span id="cb50-21"><a href="#cb50-21" aria-hidden="true" tabindex="-1"></a>    ],</span>
+<span id="cb50-22"><a href="#cb50-22" aria-hidden="true" tabindex="-1"></a>    remainder <span class="op">=</span> <span class="st">'drop'</span></span>
+<span id="cb50-23"><a href="#cb50-23" aria-hidden="true" tabindex="-1"></a>).set_output(transform <span class="op">=</span> <span class="st">"pandas"</span>)</span>
+<span id="cb50-24"><a href="#cb50-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb50-25"><a href="#cb50-25" aria-hidden="true" tabindex="-1"></a>lr_pipeline_int <span class="op">=</span> Pipeline(</span>
+<span id="cb50-26"><a href="#cb50-26" aria-hidden="true" tabindex="-1"></a>  [(<span class="st">"preprocessing"</span>, ct),</span>
+<span id="cb50-27"><a href="#cb50-27" aria-hidden="true" tabindex="-1"></a>  (<span class="st">"preprocessing2"</span>, ct_interaction),</span>
+<span id="cb50-28"><a href="#cb50-28" aria-hidden="true" tabindex="-1"></a>  (<span class="st">"linear_regression"</span>, LinearRegression())]</span>
+<span id="cb50-29"><a href="#cb50-29" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb50-30"><a href="#cb50-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb50-31"><a href="#cb50-31" aria-hidden="true" tabindex="-1"></a>ridge_pipeline_int <span class="op">=</span> Pipeline(</span>
+<span id="cb50-32"><a href="#cb50-32" aria-hidden="true" tabindex="-1"></a>  [(<span class="st">"preprocessing"</span>, ct),</span>
+<span id="cb50-33"><a href="#cb50-33" aria-hidden="true" tabindex="-1"></a>  (<span class="st">"preprocessing2"</span>, ct_interaction),</span>
+<span id="cb50-34"><a href="#cb50-34" aria-hidden="true" tabindex="-1"></a>  (<span class="st">"ridge_regression"</span>, Ridge(alpha <span class="op">=</span> <span class="dv">10</span>))]</span>
+<span id="cb50-35"><a href="#cb50-35" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb50-36"><a href="#cb50-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb50-37"><a href="#cb50-37" aria-hidden="true" tabindex="-1"></a>lasso_pipeline_int <span class="op">=</span> Pipeline(</span>
+<span id="cb50-38"><a href="#cb50-38" aria-hidden="true" tabindex="-1"></a>  [(<span class="st">"preprocessing"</span>, ct),</span>
+<span id="cb50-39"><a href="#cb50-39" aria-hidden="true" tabindex="-1"></a>  (<span class="st">"preprocessing2"</span>, ct_interaction),</span>
+<span id="cb50-40"><a href="#cb50-40" aria-hidden="true" tabindex="-1"></a>  (<span class="st">"lasso_regression"</span>, Lasso(alpha <span class="op">=</span> <span class="dv">1</span>))]</span>
+<span id="cb50-41"><a href="#cb50-41" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb50-42"><a href="#cb50-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb50-43"><a href="#cb50-43" aria-hidden="true" tabindex="-1"></a>elastic_pipeline_int <span class="op">=</span> Pipeline(</span>
+<span id="cb50-44"><a href="#cb50-44" aria-hidden="true" tabindex="-1"></a>  [(<span class="st">"preprocessing"</span>, ct),</span>
+<span id="cb50-45"><a href="#cb50-45" aria-hidden="true" tabindex="-1"></a>  (<span class="st">"preprocessing2"</span>, ct_interaction),</span>
+<span id="cb50-46"><a href="#cb50-46" aria-hidden="true" tabindex="-1"></a>  (<span class="st">"elastic_net"</span>, ElasticNet(alpha <span class="op">=</span> <span class="fl">0.1</span>))]</span>
+<span id="cb50-47"><a href="#cb50-47" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p><strong>Linear</strong></p>
+<div id="562c30a4" class="cell" data-execution_count="31">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb51"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> hitters[[<span class="st">"CRuns"</span>, <span class="st">"Hits"</span>, <span class="st">"AtBat"</span>, <span class="st">"CRBI"</span>, <span class="st">"CWalks"</span>, <span class="st">"Division"</span>]]</span>
+<span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span> hitters[<span class="st">"Salary"</span>]</span>
+<span id="cb51-3"><a href="#cb51-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb51-4"><a href="#cb51-4" aria-hidden="true" tabindex="-1"></a>cv <span class="op">=</span> cross_val_score(lr_pipeline_int, X, y, cv <span class="op">=</span> <span class="dv">5</span>, scoring <span class="op">=</span> <span class="st">'neg_root_mean_squared_error'</span>)</span>
+<span id="cb51-5"><a href="#cb51-5" aria-hidden="true" tabindex="-1"></a>avg_mse <span class="op">=</span> <span class="op">-</span>cv.mean()</span>
+<span id="cb51-6"><a href="#cb51-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f'The expected MSE for prediciting 1989 salaries with "CRuns", "Hits", "AtBat", "CRBI", "CWalks" and their interactions with Division on linear regression would be </span><span class="sc">{</span><span class="bu">round</span>(avg_mse,<span class="dv">2</span>)<span class="sc">}</span><span class="ss">'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>The expected MSE for prediciting 1989 salaries with "CRuns", "Hits", "AtBat", "CRBI", "CWalks" and their interactions with Division on linear regression would be 355.3</code></pre>
+</div>
+</div>
+<p><em>Coefs</em></p>
+<div id="89870da8" class="cell" data-execution_count="32">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb53"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a>lr_fitted <span class="op">=</span> lr_pipeline_int.fit(X, y)</span>
+<span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-3"><a href="#cb53-3" aria-hidden="true" tabindex="-1"></a>lr_coefs <span class="op">=</span> lr_fitted.named_steps[<span class="st">'linear_regression'</span>].coef_</span>
+<span id="cb53-4"><a href="#cb53-4" aria-hidden="true" tabindex="-1"></a>lr_coef_names <span class="op">=</span> lr_fitted.named_steps[<span class="st">"preprocessing2"</span>].get_feature_names_out()</span>
+<span id="cb53-5"><a href="#cb53-5" aria-hidden="true" tabindex="-1"></a>lr_coef_df <span class="op">=</span> pd.DataFrame({<span class="st">"Variable"</span>: lr_coef_names, <span class="st">"Coef"</span>: lr_coefs})</span>
+<span id="cb53-6"><a href="#cb53-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(lr_coef_df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>                                             Variable          Coef
+0                                      interaction__1  0.000000e+00
+1                     interaction__standardize__CRuns  1.622968e+02
+2                    interaction__dummify__Division_E  2.669442e+01
+3   interaction__standardize__CRuns dummify__Divis... -1.701379e+02
+4                                     interaction2__1  1.101341e-13
+5                     interaction2__standardize__Hits  9.018415e+01
+6                   interaction2__dummify__Division_E  2.669442e+01
+7   interaction2__standardize__Hits dummify__Divis...  3.662555e+02
+8                                     interaction3__1 -1.421085e-13
+9                    interaction3__standardize__AtBat  1.440214e+01
+10                  interaction3__dummify__Division_E  2.669442e+01
+11  interaction3__standardize__AtBat dummify__Divi... -3.416196e+02
+12                                    interaction4__1  0.000000e+00
+13                    interaction4__standardize__CRBI  9.982807e+01
+14                  interaction4__dummify__Division_E  2.669442e+01
+15  interaction4__standardize__CRBI dummify__Divis...  1.865116e+02
+16                                    interaction5__1 -1.165880e-42
+17                  interaction5__standardize__CWalks -9.360235e+01
+18                  interaction5__dummify__Division_E  2.669442e+01
+19  interaction5__standardize__CWalks dummify__Div...  1.123377e+02</code></pre>
+</div>
+</div>
+<p><strong>Ridge</strong></p>
+<div id="904d8f43" class="cell" data-execution_count="33">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb55"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a>degrees_ridge <span class="op">=</span> {<span class="st">'ridge_regression__alpha'</span>: [<span class="fl">0.01</span>, <span class="fl">0.1</span>, <span class="dv">1</span>, <span class="dv">10</span>, <span class="dv">100</span>]}</span>
+<span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-3"><a href="#cb55-3" aria-hidden="true" tabindex="-1"></a>gscv_ridge <span class="op">=</span> GridSearchCV(ridge_pipeline_int, degrees_ridge, cv <span class="op">=</span> <span class="dv">5</span>, scoring<span class="op">=</span><span class="st">'neg_root_mean_squared_error'</span>)</span>
+<span id="cb55-4"><a href="#cb55-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-5"><a href="#cb55-5" aria-hidden="true" tabindex="-1"></a>gscv_ridge_fitted <span class="op">=</span> gscv_ridge.fit(X,y)</span>
+<span id="cb55-6"><a href="#cb55-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-7"><a href="#cb55-7" aria-hidden="true" tabindex="-1"></a>pd.DataFrame(data <span class="op">=</span> {<span class="st">"degrees"</span>: [<span class="fl">0.01</span>, <span class="fl">0.1</span>, <span class="dv">1</span>, <span class="dv">10</span>, <span class="dv">100</span>], <span class="st">"scores"</span>: gscv_ridge_fitted.cv_results_[<span class="st">'mean_test_score'</span>]})</span>
+<span id="cb55-8"><a href="#cb55-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-9"><a href="#cb55-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Best lambda is 10</span></span>
+<span id="cb55-10"><a href="#cb55-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-11"><a href="#cb55-11" aria-hidden="true" tabindex="-1"></a>cv_ridge <span class="op">=</span> cross_val_score(ridge_pipeline_int, X, y, cv <span class="op">=</span> <span class="dv">5</span>, scoring <span class="op">=</span> <span class="st">'neg_root_mean_squared_error'</span>)</span>
+<span id="cb55-12"><a href="#cb55-12" aria-hidden="true" tabindex="-1"></a>avg_mse_ridge <span class="op">=</span> <span class="op">-</span>cv_ridge.mean()</span>
+<span id="cb55-13"><a href="#cb55-13" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f'The expected MSE for prediciting 1989 salaries with "CRuns", "Hits", "AtBat", "CRBI", "CWalks" and their interactions with Division on ridge regression would be </span><span class="sc">{</span><span class="bu">round</span>(avg_mse_ridge,<span class="dv">2</span>)<span class="sc">}</span><span class="ss">'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>The expected MSE for prediciting 1989 salaries with "CRuns", "Hits", "AtBat", "CRBI", "CWalks" and their interactions with Division on ridge regression would be 346.16</code></pre>
+</div>
+</div>
+<p><em>Coefs</em></p>
+<div id="2943b952" class="cell" data-execution_count="34">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb57"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a>ridge_fitted <span class="op">=</span> ridge_pipeline_int.fit(X,y)</span>
+<span id="cb57-2"><a href="#cb57-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb57-3"><a href="#cb57-3" aria-hidden="true" tabindex="-1"></a>ridge_coefs <span class="op">=</span> ridge_fitted.named_steps[<span class="st">'ridge_regression'</span>].coef_</span>
+<span id="cb57-4"><a href="#cb57-4" aria-hidden="true" tabindex="-1"></a>ridge_coef_names <span class="op">=</span> ridge_fitted.named_steps[<span class="st">"preprocessing2"</span>].get_feature_names_out()</span>
+<span id="cb57-5"><a href="#cb57-5" aria-hidden="true" tabindex="-1"></a>ridge_coef_df <span class="op">=</span> pd.DataFrame({<span class="st">"Variable"</span>: ridge_coef_names, <span class="st">"Coef"</span>: ridge_coefs})</span>
+<span id="cb57-6"><a href="#cb57-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(ridge_coef_df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>                                             Variable        Coef
+0                                      interaction__1    0.000000
+1                     interaction__standardize__CRuns   77.152906
+2                    interaction__dummify__Division_E   26.337373
+3   interaction__standardize__CRuns dummify__Divis...    6.841327
+4                                     interaction2__1    0.000000
+5                     interaction2__standardize__Hits  141.726969
+6                   interaction2__dummify__Division_E   26.337373
+7   interaction2__standardize__Hits dummify__Divis...  112.137191
+8                                     interaction3__1    0.000000
+9                    interaction3__standardize__AtBat  -31.574264
+10                  interaction3__dummify__Division_E   26.337373
+11  interaction3__standardize__AtBat dummify__Divi...  -90.787596
+12                                    interaction4__1    0.000000
+13                    interaction4__standardize__CRBI  118.896785
+14                  interaction4__dummify__Division_E   26.337373
+15  interaction4__standardize__CRBI dummify__Divis...   95.446378
+16                                    interaction5__1    0.000000
+17                  interaction5__standardize__CWalks  -24.268610
+18                  interaction5__dummify__Division_E   26.337373
+19  interaction5__standardize__CWalks dummify__Div...   19.879820</code></pre>
+</div>
+</div>
+<p><strong>Lasso</strong></p>
+<div id="002e8977" class="cell" data-execution_count="35">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb59"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a>degrees_lasso <span class="op">=</span> {<span class="st">'lasso_regression__alpha'</span>: [<span class="fl">0.0001</span>, <span class="fl">0.001</span>, <span class="fl">0.01</span>, <span class="fl">0.1</span>, <span class="dv">1</span>, <span class="dv">10</span>, <span class="dv">100</span>]}</span>
+<span id="cb59-2"><a href="#cb59-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb59-3"><a href="#cb59-3" aria-hidden="true" tabindex="-1"></a>gscv_lasso <span class="op">=</span> GridSearchCV(lasso_pipeline_int, degrees_lasso, cv <span class="op">=</span> <span class="dv">5</span>, scoring<span class="op">=</span><span class="st">'neg_root_mean_squared_error'</span>)</span>
+<span id="cb59-4"><a href="#cb59-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb59-5"><a href="#cb59-5" aria-hidden="true" tabindex="-1"></a>gscv_lasso_fitted <span class="op">=</span> gscv_lasso.fit(X,y)</span>
+<span id="cb59-6"><a href="#cb59-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb59-7"><a href="#cb59-7" aria-hidden="true" tabindex="-1"></a>pd.DataFrame(data <span class="op">=</span> {<span class="st">"degrees"</span>: [<span class="fl">0.0001</span>,<span class="fl">0.001</span>, <span class="fl">0.01</span>, <span class="fl">0.1</span>, <span class="dv">1</span>, <span class="dv">10</span>, <span class="dv">100</span>], <span class="st">"scores"</span>: gscv_lasso_fitted.cv_results_[<span class="st">'mean_test_score'</span>]})</span>
+<span id="cb59-8"><a href="#cb59-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb59-9"><a href="#cb59-9" aria-hidden="true" tabindex="-1"></a><span class="co"># the best lambda for lasso is 1</span></span>
+<span id="cb59-10"><a href="#cb59-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb59-11"><a href="#cb59-11" aria-hidden="true" tabindex="-1"></a>cv_lasso <span class="op">=</span> cross_val_score(lasso_pipeline_int, X, y, cv <span class="op">=</span> <span class="dv">5</span>, scoring <span class="op">=</span> <span class="st">'neg_root_mean_squared_error'</span>)</span>
+<span id="cb59-12"><a href="#cb59-12" aria-hidden="true" tabindex="-1"></a>avg_mse_lasso <span class="op">=</span> <span class="op">-</span>cv_lasso.mean()</span>
+<span id="cb59-13"><a href="#cb59-13" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f'The expected MSE for prediciting 1989 salaries with "CRuns", "Hits", "AtBat", "CRBI", "CWalks" and their interactions with Division on ridge regression would be </span><span class="sc">{</span><span class="bu">round</span>(avg_mse_lasso,<span class="dv">2</span>)<span class="sc">}</span><span class="ss">'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>The expected MSE for prediciting 1989 salaries with "CRuns", "Hits", "AtBat", "CRBI", "CWalks" and their interactions with Division on ridge regression would be 353.27</code></pre>
+</div>
+</div>
+<p><strong>Elastic Net</strong></p>
+<div id="9bb5ba28" class="cell" data-execution_count="36">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb61"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb61-1"><a href="#cb61-1" aria-hidden="true" tabindex="-1"></a>degrees_elastic <span class="op">=</span> {<span class="st">'elastic_net__alpha'</span>: [<span class="fl">0.001</span>,<span class="fl">0.01</span>, <span class="fl">0.1</span>, <span class="dv">1</span>, <span class="dv">10</span>, <span class="dv">100</span>]}</span>
+<span id="cb61-2"><a href="#cb61-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-3"><a href="#cb61-3" aria-hidden="true" tabindex="-1"></a>gscv_elastic <span class="op">=</span> GridSearchCV(elastic_pipeline_int, degrees_elastic, cv <span class="op">=</span> <span class="dv">5</span>, scoring<span class="op">=</span><span class="st">'neg_root_mean_squared_error'</span>)</span>
+<span id="cb61-4"><a href="#cb61-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-5"><a href="#cb61-5" aria-hidden="true" tabindex="-1"></a>gscv_elastic_fitted <span class="op">=</span> gscv_elastic.fit(X,y)</span>
+<span id="cb61-6"><a href="#cb61-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-7"><a href="#cb61-7" aria-hidden="true" tabindex="-1"></a>pd.DataFrame(data <span class="op">=</span> {<span class="st">"degrees"</span>: [<span class="fl">0.001</span>,<span class="fl">0.01</span>, <span class="fl">0.1</span>, <span class="dv">1</span>, <span class="dv">10</span>, <span class="dv">100</span>], <span class="st">"scores"</span>: gscv_elastic_fitted.cv_results_[<span class="st">'mean_test_score'</span>]})</span>
+<span id="cb61-8"><a href="#cb61-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-9"><a href="#cb61-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Best lambda for elastic is 0.1</span></span>
+<span id="cb61-10"><a href="#cb61-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-11"><a href="#cb61-11" aria-hidden="true" tabindex="-1"></a>cv_elastic <span class="op">=</span> cross_val_score(elastic_pipeline_int, X, y, cv <span class="op">=</span> <span class="dv">5</span>, scoring <span class="op">=</span> <span class="st">'neg_root_mean_squared_error'</span>)</span>
+<span id="cb61-12"><a href="#cb61-12" aria-hidden="true" tabindex="-1"></a>avg_mse_elastic <span class="op">=</span> <span class="op">-</span>cv_elastic.mean()</span>
+<span id="cb61-13"><a href="#cb61-13" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f'The expected MSE for prediciting 1989 salaries with "CRuns", "Hits", "AtBat", "CRBI", "CWalks" on elastic net would be </span><span class="sc">{</span><span class="bu">round</span>(avg_mse_elastic,<span class="dv">2</span>)<span class="sc">}</span><span class="ss">'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>The expected MSE for prediciting 1989 salaries with "CRuns", "Hits", "AtBat", "CRBI", "CWalks" on elastic net would be 346.03</code></pre>
+</div>
+</div>
+</section>
+<section id="model-selection" class="level1">
+<h1>Model Selection</h1>
+<p>Out of all the models, the one that performed best (had the smallest MSE) was the elastic model that contained the 5 best numeric variables along with their interactions with the best categorcial variable.</p>
+<section id="part-3" class="level2">
+<h2 class="anchored" data-anchor-id="part-3">Part 3</h2>
+</section>
+</section>
+<section id="a-1" class="level1">
+<h1>A)</h1>
+<p>The coefficients in the Ridge models typically had a lower absolute value than the coefficients in the ordinary regression model. This makes sense because of the peanalites added to the Betas in the penalized models. When the betas are penalized, their effect is “dampened” in a way, making the coefficients less extreme and better for generalization.</p>
+</section>
+<section id="b-1" class="level1">
+<h1>B)</h1>
+<p>The lambdas and MSEs were both different for the lasso models in part 1 and part 2. This makes sense because each of the models were fit on different predictors, meaning that there will be different amounts estimates of one predictors given that another predictor is in the model, and some of those variables might cause the model to fit worse (large mse) or better (smaller mse)</p>
+</section>
+<section id="c-1" class="level1">
+<h1>C)</h1>
+<p>It makes sense that the Elastic net regression always “wins” (has the smallest MSE) because we’re penalizing the models in three different ways, this allows for corrections that help us from overfitting the model, making it more generalizable to fit different kinds of data.</p>
+<section id="part-4" class="level2">
+<h2 class="anchored" data-anchor-id="part-4">Part 4</h2>
+<div id="ca3935be" class="cell" data-execution_count="37">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb63"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb63-1"><a href="#cb63-1" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> hitters.drop([<span class="st">"Salary"</span>], axis <span class="op">=</span> <span class="dv">1</span>)</span>
+<span id="cb63-2"><a href="#cb63-2" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span> hitters[<span class="st">"Salary"</span>]</span>
+<span id="cb63-3"><a href="#cb63-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb63-4"><a href="#cb63-4" aria-hidden="true" tabindex="-1"></a>elastic_pipeline_int <span class="op">=</span> Pipeline(</span>
+<span id="cb63-5"><a href="#cb63-5" aria-hidden="true" tabindex="-1"></a>  [(<span class="st">"preprocessing"</span>, ct),</span>
+<span id="cb63-6"><a href="#cb63-6" aria-hidden="true" tabindex="-1"></a>  (<span class="st">"preprocessing2"</span>, ct_interaction),</span>
+<span id="cb63-7"><a href="#cb63-7" aria-hidden="true" tabindex="-1"></a>  (<span class="st">"elastic_net"</span>, ElasticNet(alpha <span class="op">=</span> <span class="fl">0.1</span>))]</span>
+<span id="cb63-8"><a href="#cb63-8" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb63-9"><a href="#cb63-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb63-10"><a href="#cb63-10" aria-hidden="true" tabindex="-1"></a>winner_fitted <span class="op">=</span> elastic_pipeline_int.fit(X,y)</span>
+<span id="cb63-11"><a href="#cb63-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb63-12"><a href="#cb63-12" aria-hidden="true" tabindex="-1"></a>winner_coefs <span class="op">=</span> winner_fitted.named_steps[<span class="st">'elastic_net'</span>].coef_</span>
+<span id="cb63-13"><a href="#cb63-13" aria-hidden="true" tabindex="-1"></a>winner_coef_names <span class="op">=</span> winner_fitted.named_steps[<span class="st">"preprocessing2"</span>].get_feature_names_out()</span>
+<span id="cb63-14"><a href="#cb63-14" aria-hidden="true" tabindex="-1"></a>winner_coef_df <span class="op">=</span> pd.DataFrame({<span class="st">"Variable"</span>: winner_coef_names, <span class="st">"Coef"</span>: winner_coefs})</span>
+<span id="cb63-15"><a href="#cb63-15" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(winner_coef_df)</span>
+<span id="cb63-16"><a href="#cb63-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb63-17"><a href="#cb63-17" aria-hidden="true" tabindex="-1"></a>cv_elastic <span class="op">=</span> cross_val_score(elastic_pipeline_int, X, y, cv <span class="op">=</span> <span class="dv">5</span>, scoring <span class="op">=</span> <span class="st">'neg_root_mean_squared_error'</span>)</span>
+<span id="cb63-18"><a href="#cb63-18" aria-hidden="true" tabindex="-1"></a>avg_mse_elastic <span class="op">=</span> <span class="op">-</span>cv_elastic.mean()</span>
+<span id="cb63-19"><a href="#cb63-19" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f'MSE: </span><span class="sc">{</span><span class="bu">round</span>(avg_mse_elastic,<span class="dv">2</span>)<span class="sc">}</span><span class="ss">'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>                                             Variable        Coef
+0                                      interaction__1    0.000000
+1                     interaction__standardize__CRuns   74.113559
+2                    interaction__dummify__Division_E   26.169845
+3   interaction__standardize__CRuns dummify__Divis...   14.265328
+4                                     interaction2__1    0.000000
+5                     interaction2__standardize__Hits  132.482757
+6                   interaction2__dummify__Division_E   26.165155
+7   interaction2__standardize__Hits dummify__Divis...   97.511960
+8                                     interaction3__1    0.000000
+9                    interaction3__standardize__AtBat  -22.969738
+10                  interaction3__dummify__Division_E   26.165267
+11  interaction3__standardize__AtBat dummify__Divi...  -74.328924
+12                                    interaction4__1    0.000000
+13                    interaction4__standardize__CRBI  115.395958
+14                  interaction4__dummify__Division_E   26.168894
+15  interaction4__standardize__CRBI dummify__Divis...   89.468541
+16                                    interaction5__1    0.000000
+17                  interaction5__standardize__CWalks  -17.787264
+18                  interaction5__dummify__Division_E   26.170605
+19  interaction5__standardize__CWalks dummify__Div...   16.816665
+MSE: 346.03</code></pre>
+</div>
+</div>
+<p>When we fit the elastic-interaction pipeline on all the data, we recieve coefficients for each of the selected variables along with their interaction with League. The reason that we don’t have coefficients for the other variables in the dataset (although we fit on all the data) is because in our pipeline, we inptted instructions to “drop” the other variables that not been specified. We can see that on its own, it seems that for every one hit in 1986, a players salary increases the most (for given 1 unit increase).</p>
+<div id="d76b29a8" class="cell" data-execution_count="38">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb65"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb65-1"><a href="#cb65-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> plotnine <span class="im">import</span> <span class="op">*</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div id="1cc50b6b" class="cell" data-execution_count="39">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb66"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb66-1"><a href="#cb66-1" aria-hidden="true" tabindex="-1"></a>hitters_copy <span class="op">=</span> hitters.copy()</span>
+<span id="cb66-2"><a href="#cb66-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb66-3"><a href="#cb66-3" aria-hidden="true" tabindex="-1"></a>hitters_copy[<span class="st">'predicted_salary'</span>] <span class="op">=</span> winner_fitted.predict(hitters.drop([<span class="st">"Salary"</span>], axis <span class="op">=</span> <span class="dv">1</span>))</span>
+<span id="cb66-4"><a href="#cb66-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb66-5"><a href="#cb66-5" aria-hidden="true" tabindex="-1"></a>hitters_copy[<span class="st">'residuals'</span>] <span class="op">=</span> hitters_copy[<span class="st">'Salary'</span>] <span class="op">-</span> hitters_copy[<span class="st">'predicted_salary'</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div id="9b89c030" class="cell" data-execution_count="40">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb67"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb67-1"><a href="#cb67-1" aria-hidden="true" tabindex="-1"></a>y_pred <span class="op">=</span> winner_fitted.predict(hitters.drop([<span class="st">"Salary"</span>], axis <span class="op">=</span> <span class="dv">1</span>))</span>
+<span id="cb67-2"><a href="#cb67-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb67-3"><a href="#cb67-3" aria-hidden="true" tabindex="-1"></a>(ggplot(hitters_copy,</span>
+<span id="cb67-4"><a href="#cb67-4" aria-hidden="true" tabindex="-1"></a>aes(x <span class="op">=</span> <span class="st">'predicted_salary'</span>, y <span class="op">=</span> <span class="st">'residuals'</span>))</span>
+<span id="cb67-5"><a href="#cb67-5" aria-hidden="true" tabindex="-1"></a><span class="op">+</span> geom_point()</span>
+<span id="cb67-6"><a href="#cb67-6" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Lab%206_files/figure-html/cell-41-output-1.png" width="672" height="480" class="figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>From the residuals x predicted plot, we are able to see sure signs of heteroskedasticity, meaning that as our predicted salary increases, the error for which we predict is greater. This makes sense with the variation in statisitcs of different players.</p>
+</section>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

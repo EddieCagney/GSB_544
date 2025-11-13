@@ -54,7 +54,7 @@ ct = ColumnTransformer(
 
 lr_pipeline_1 = Pipeline(
   [("preprocessing", ct),
-  ("ridge_regression", LinearRegression())]
+  ("linear_regression", LinearRegression())]
 )
 
 cross_val_score(lr_pipeline_1, X, y, cv = 5, scoring = 'r2')
