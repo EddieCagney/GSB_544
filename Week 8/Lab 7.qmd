@@ -1,0 +1,328 @@
+---
+title: "GSB 544 Lab 7"
+author: "Eddie Cagney"
+format:
+  html:
+    embed-resources: true
+    code-fold: true
+editor: source
+execute:
+  echo: true
+  error: true
+  message: false
+  warning: false
+---
+
+# Setup
+```{python}
+import pandas as pd
+from sklearn.pipeline import Pipeline
+from sklearn.neighbors import KNeighborsRegressor, KNeighborsClassifier
+from sklearn.tree import DecisionTreeRegressor
+from sklearn.pipeline import Pipeline
+from sklearn.compose import make_column_selector, ColumnTransformer
+from sklearn.preprocessing import StandardScaler, OneHotEncoder, PolynomialFeatures
+from sklearn.linear_model import LinearRegression, Ridge, Lasso, ElasticNet, LogisticRegression
+from sklearn.model_selection import train_test_split, cross_val_score, GridSearchCV
+from sklearn.metrics import r2_score, confusion_matrix, ConfusionMatrixDisplay, accuracy_score, cohen_kappa_score, precision_score, recall_score, roc_auc_score
+import numpy as np
+from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
+```
+
+```{python}
+ha = pd.read_csv("https://www.dropbox.com/s/aohbr6yb9ifmc8w/heart_attack.csv?dl=1")
+```
+
+# Part 1
+**Knn**
+```{python}
+X = ha[["age", "sex", "chol", "thalach", "cp"]]
+y = ha["output"]
+
+ct_kmeans = ColumnTransformer(
+  [
+    ("dummify", 
+    OneHotEncoder(sparse_output = False, handle_unknown='ignore'),
+    make_column_selector(dtype_include=object)),
+    ("standardize", 
+    StandardScaler(), 
+    make_column_selector(dtype_include=np.number))
+  ],
+  remainder = "passthrough"
+)
+
+pipeline_knn = Pipeline(
+  [("preprocessing", ct_kmeans),
+  ("knn", KNeighborsClassifier(n_neighbors = 5))]
+)
+
+degrees = {'knn__n_neighbors': [5,10,15,20,25]}
+gscv_ridge = GridSearchCV(pipeline_knn, degrees, cv = 5, scoring='roc_auc')
+gscv_ridge_fitted = gscv_ridge.fit(X,y)
+table = pd.DataFrame(data = {"degrees": [5,10,15,20,25], "scores": gscv_ridge_fitted.cv_results_['mean_test_score']})
+best_score_knn = table.iloc[3,1]
+
+print(table)
+print(f'The best roc auc metric is {best_score_knn}')
+
+best_n = gscv_ridge_fitted.best_params_['knn__n_neighbors']
+```
+
+```{python}
+pipeline_knn = Pipeline(
+  [("preprocessing", ct_kmeans),
+  ("knn", KNeighborsClassifier(n_neighbors = best_n))]
+)
+
+knn = pipeline_knn.fit(X,y)
+
+y_train_ = pd.Series(knn.predict(X), name = "Predicted")
+print(pd.crosstab(y, y_train_, margins=True))
+```
+Attempted to fit the model predicting output with the rest of the variables in the dataset, but found that doing so led to overfitting of the model, so we took out the variable `restecg` which helped. From doing cross validation, found that the best number of nearest neighbors was 20, giving us an ROC AUC score around 0.845.
+
+
+**Logistic Regression**
+```{python}
+ct_logistic = ColumnTransformer(
+  [
+    ("dummify", 
+    OneHotEncoder(sparse_output = False, handle_unknown='ignore'),
+    make_column_selector(dtype_include=object)),
+    ("standardize", 
+    StandardScaler(), 
+    make_column_selector(dtype_include=np.number))
+  ],
+  remainder = "passthrough"
+)
+
+pipeline_logistic = Pipeline(
+  [("preprocessing", ct_logistic),
+  ("logit_step", LogisticRegression(max_iter = 1000, C = 1, penalty="l2", solver="lbfgs"))]
+)
+
+degrees = {'logit_step__C': [2,3,4,5,6]}
+gscv_ridge = GridSearchCV(pipeline_logistic, degrees, cv = 5, scoring='roc_auc')
+gscv_ridge_fitted = gscv_ridge.fit(X,y)
+table = pd.DataFrame(data = {"degrees": [2,3,4,5,6], "scores": gscv_ridge_fitted.cv_results_['mean_test_score']})
+best_score_logit = table.iloc[1,1]
+
+print(table)
+print(f'The best roc auc metric is {best_score_logit}')
+
+best_c = gscv_ridge_fitted.best_params_['logit_step__C']
+```
+
+```{python}
+pipeline_logistic = Pipeline(
+  [("preprocessing", ct_kmeans),
+  ("logit_step", LogisticRegression(max_iter = 1000, C = best_c, penalty="l2", solver="lbfgs"))]
+)
+
+logistic = pipeline_logistic.fit(X,y)
+
+y_train_ = pd.Series(logistic.predict(X), name = "Predicted")
+print(pd.crosstab(y, y_train_, margins=True))
+
+clf = logistic.named_steps['logit_step']  
+coefs = clf.coef_
+intercept = clf.intercept_
+print(coefs)
+print(intercept)
+```
+Sticking to the same variables that was decided for the KKN model, the logistic regression was performed with tuning on its regularization element. With a higher "C" the model tends to allow the coefficients to grow/ be more flexible. However, this can lead to overfitting which is the reason why we tune with cross validation, which resulted in the best hyperparameter being `best_c`. Based on the roc_auc_score, it appears that this model predicts better than the KKN model previously used, given the higher roc auc. The coefficients in the logistic regression represent the log-odds of the outcome (and the change of those odds) for a one unit change in the predictor.
+
+**Decision Tree**
+
+```{python}
+ct_tree = ColumnTransformer(
+  [
+    ("dummify", 
+    OneHotEncoder(sparse_output = False, handle_unknown='ignore'),
+    make_column_selector(dtype_include=object))
+  ],
+  remainder = "passthrough"
+)
+
+pipeline_tree = Pipeline(
+  [("preprocessing", ct_tree),
+  ("decision_tree", DecisionTreeClassifier(max_depth=None, min_impurity_decrease = 0))]
+)
+
+degrees = {'decision_tree__min_impurity_decrease': [0, 0.01, 0.0001]}
+gscv_ridge = GridSearchCV(pipeline_tree, degrees, cv = 5, scoring='roc_auc')
+gscv_ridge_fitted = gscv_ridge.fit(X,y)
+table = pd.DataFrame(data = {"degrees": [0, 0.01, 0.0001], "scores": gscv_ridge_fitted.cv_results_['mean_test_score']})
+best_score_tree = table.iloc[1,1]
+
+print(table)
+print(f'The best roc auc metric is {best_score_tree}')
+
+
+best_depth = gscv_ridge_fitted.best_params_['decision_tree__min_impurity_decrease']
+```
+
+
+```{python}
+pipeline_tree = Pipeline(
+  [("preprocessing", ct_tree),
+  ("decision_tree", DecisionTreeClassifier(max_depth=None, min_impurity_decrease = best_depth))]
+)
+
+tree = pipeline_tree.fit(X,y)
+
+y_train_ = pd.Series(tree.predict(X), name = "Predicted")
+print(pd.crosstab(y, y_train_, margins=True))
+```
+For the decision tree model, I originally was tuning based off of max_depth. After doing this I realized that this wasn't necessarily improving the overall predictions of my model. So, I went and found a weight to tune that would do so, that being the min_impurity_decrease. From there I was able to find the best roc auc which was min_impurity_decrease of 0.01. 
+
+**Q4**
+The predictors that were most important when predicting heart attack risk were sex and cholesterol. I found that when I was trying out different variables to use in my pipeline, when these were excluded the model appeared to fit worse. 
+
+**Q5**
+```{python}
+from plotnine import *
+from sklearn.model_selection import cross_val_predict
+from sklearn.metrics import roc_curve, roc_auc_score
+
+models = [
+    ("k-NN", pipeline_knn),
+    ("Logistic", pipeline_logistic),
+    ("Decision Tree", pipeline_tree),
+]
+
+
+rows, labels = [], {}
+for name, pipe in models:
+    y_score = cross_val_predict(pipe, X, y, cv = 5, method="predict_proba")[:, 1]
+    fpr, tpr, _ = roc_curve(y, y_score)
+    auc_val = roc_auc_score(y, y_score)
+    labels[name] = f"{name} (AUC={auc_val:.3f})"
+    rows.append(pd.DataFrame({"fpr": fpr, "tpr": tpr, "model": name}))
+
+roc_df = pd.concat(rows, ignore_index=True)
+roc_df["label"] = roc_df["model"].map(labels)
+
+(
+    ggplot(roc_df, aes("fpr", "tpr", color="label"))
+    + geom_line(size=1.0)
+    + geom_abline(slope=1, intercept=0)
+    + coord_equal()
+    + labs(title="ROC Graph", 
+    x="False Positive Rate", 
+    y="True Positive Rate", color="")
+    + theme_minimal()
+)
+
+
+
+```
+
+# Part 2
+**Knn**
+```{python}
+from sklearn.metrics import make_scorer
+
+knn_recall = cross_val_score(pipeline_knn, X, y, cv = 5, scoring = 'recall').mean()
+knn_precision = cross_val_score(pipeline_knn, X, y, cv = 5, scoring = 'precision').mean()
+knn_scorer = make_scorer(recall_score, pos_label=0) 
+knn_specificity = cross_val_score(pipeline_knn, X, y, cv=5, scoring = knn_scorer, n_jobs=-1).mean()
+knn_recall,knn_precision,knn_specificity
+```
+
+**Logistic**
+
+```{python}
+logistic_recall = cross_val_score(pipeline_logistic, X, y, cv = 5, scoring = 'recall').mean()
+logistic_precision = cross_val_score(pipeline_logistic, X, y, cv = 5, scoring = 'precision').mean()
+logistic_scorer = make_scorer(recall_score, pos_label=0) 
+logistic_specificity = cross_val_score(pipeline_logistic, X, y, cv = 5, scoring = logistic_scorer, n_jobs=-1).mean()
+logistic_recall, logistic_precision, logistic_specificity
+```
+
+**Decision Tree**
+
+```{python}
+tree_recall = cross_val_score(pipeline_tree, X, y, cv = 5, scoring = 'recall').mean()
+tree_precision = cross_val_score(pipeline_tree, X, y, cv = 5, scoring = 'precision').mean()
+tree_scorer = make_scorer(recall_score, pos_label=0) 
+tree_specificity = cross_val_score(pipeline_tree, X, y, cv = 5, scoring = tree_scorer, n_jobs=-1).mean()
+tree_recall, tree_precision, tree_specificity
+```
+
+# Part 3
+**Q1**
+The metric I would use would be recall, this is because if we deem a person "low risk" thats the same as predicting they will not have a heart attack. If we focus on making recall the highest it can be, this would increase the proportion of correct predictions for a at-risk person of having a heart attack, however will still be playing it safe regaurding accidentally labeling someone as low-risk and they do end up having a heart attack. If I decide to use recall then the model I would suggest is the logistic model given that that model had the best recall score and I should expect the same recall score for future observations.
+
+**Q2**
+In this case I would use precision. This would help the hospital staff identify the proportion of at-risk individuals that actually need the bed-space to monitor their chance of having a heart attack (basically trying to maximize the amount of people labeld at-risk with the actual amount of people who are at risk). The best model for precision is the Decision tree model with it having the best precision score which should be reflected when we make new predictions.
+
+**Q3**
+For this situation, the context doesn't push me to select any particular metric to determine the model selection (could use roc auc for overall fit). However, I would select the decision tree model because the area of interest in among the predictors, which the decision tree gives good insight on. 
+
+**Q4**
+This example is also not leading me to select any particular metric for model selection because we are not interested in specifically the true positives or true negatives but rather the overall accuracy of the doctors. My suggested model would be the logistic model as it can give a set of log odds for the predictions of the doctors.
+
+# Part 4
+
+```{python}
+ha_validation = pd.read_csv("https://www.dropbox.com/s/jkwqdiyx6o6oad0/heart_attack_validation.csv?dl=1")
+```
+
+```{python}
+X_new = ha_validation[["age", "sex", "chol", "thalach", "cp"]]
+y_new = ha_validation["output"]
+```
+
+**KNN**
+```{python}
+y_train_ = pd.Series(knn.predict(X_new), name = "Predicted")
+print(pd.crosstab(y_new, y_train_, margins=True))
+
+knn_recall_new = cross_val_score(pipeline_knn, X_new, y_new, cv = 5, scoring = 'recall').mean()
+knn_precision_new = cross_val_score(pipeline_knn, X_new, y_new, cv = 5, scoring = 'precision').mean()
+knn_roc_auc_new = cross_val_score(pipeline_knn, X_new, y_new, cv = 5, scoring = 'roc_auc').mean()
+
+print(f'New Scores:\n Recall: {knn_recall_new}\n Precision: {knn_precision_new}\n Roc Auc:{knn_roc_auc_new}')
+print(f'Old Scores:\n Recall: {knn_recall}\n Precision: {knn_precision}\n Roc Auc:{best_score_knn}')
+```
+
+**Logistic**
+```{python}
+y_train_ = pd.Series(logistic.predict(X_new), name = "Predicted")
+print(pd.crosstab(y_new, y_train_, margins=True))
+
+logistic_recall_new = cross_val_score(pipeline_logistic, X_new, y_new, cv = 5, scoring = 'recall').mean()
+logistic_precision_new = cross_val_score(pipeline_logistic, X_new, y_new, cv = 5, scoring = 'precision').mean()
+logistic_roc_auc_new = cross_val_score(pipeline_logistic, X_new, y_new, cv = 5, scoring = 'roc_auc').mean()
+
+print(f'New Scores:\n Recall: {logistic_recall_new}\n Precision: {logistic_precision_new}\n Roc Auc:{logistic_roc_auc_new}')
+print(f'Old Scores:\n Recall: {logistic_recall}\n Precision: {logistic_precision}\n Roc Auc:{best_score_logit}')
+```
+
+**Decision Tree**
+```{python}
+y_train_ = pd.Series(tree.predict(X_new), name = "Predicted")
+print(pd.crosstab(y_new, y_train_, margins=True))
+
+tree_recall_new = cross_val_score(pipeline_tree, X_new, y_new, cv = 5, scoring = 'recall').mean()
+tree_precision_new = cross_val_score(pipeline_tree, X_new, y_new, cv = 5, scoring = 'precision').mean()
+tree_roc_auc_new = cross_val_score(pipeline_tree, X_new, y_new, cv = 5, scoring = 'roc_auc').mean()
+
+print(f'New Scores:\n Recall: {tree_recall_new}\n Precision: {tree_precision_new}\n Roc Auc:{tree_roc_auc_new}')
+print(f'Old Scores:\n Recall: {tree_recall}\n Precision: {tree_precision}\n Roc Auc:{best_score_tree}')
+```
+The measure of model success was decently reasonable when the models were used on the new data. We see the different metrics vary between the new and old scores (as expected), however the scores are reasonably accurate for making predictions.
+
+# Part 5
+From what I can gather from the internet, the Cohen's Kappa is a metric that takes into account the random chance of having predictions match the actual results. Sort of like saying "how often did we actually make the right diagnosis, rather than just happen by chance to choose the right one".
+```{python}
+cohen_kappa = make_scorer(cohen_kappa_score)
+
+knn_ck = cross_val_score(pipeline_knn, X, y, cv = 5, scoring = cohen_kappa).mean()
+logistic_ck = cross_val_score(pipeline_logistic, X, y, cv = 5, scoring = cohen_kappa).mean()
+tree_ck = cross_val_score(pipeline_tree, X, y, cv = 5, scoring = cohen_kappa).mean()
+
+print(f'Cohen Kappa Scores:\n Knn: {knn_ck}\n Logit: {logistic_ck}\n Tree:{tree_ck}')
+```
+When using the Kappa score, this seems to be best fit for a situation similar to the situation posed in Part 3 Q4, where the training doctors are making diagnosis and comparing them to a certain algorthim. This would allow the "random chance" of matching the proper diagnosis to be accounted for in our algorthim in a much more specified way. The conclusions made previously would change slightly, seeing that with this new metric, we see lower scores. Interpretting these scores ~0.52, 0.52 & 0.32, means that the predictions we're getting are somewhere between having a model that predicts everything perfectly and one that gets matches from random chance for the KNN and Logisitic Models (0.5 is between 1 and 0) and for the Decision tree model, it appears that the matches being made appear to be closer due to random chance rather than the model prediction/accuracy itself. 

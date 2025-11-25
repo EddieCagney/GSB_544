@@ -1,0 +1,746 @@
+---
+title: "GSB 544 Lab 8"
+author: "Eddie Cagney"
+format:
+  html:
+    embed-resources: true
+    code-fold: true
+editor: source
+execute:
+  echo: true
+  error: true
+  message: false
+  warning: false
+---
+
+```{python}
+import pandas as pd
+import numpy as np
+from sklearn.pipeline import Pipeline
+from sklearn.neighbors import KNeighborsRegressor, KNeighborsClassifier
+from sklearn.tree import DecisionTreeRegressor
+from sklearn.pipeline import Pipeline
+from sklearn.compose import make_column_selector, ColumnTransformer
+from sklearn.preprocessing import StandardScaler, OneHotEncoder, PolynomialFeatures
+from sklearn.linear_model import LinearRegression, Ridge, Lasso, ElasticNet, LogisticRegression
+from sklearn.model_selection import train_test_split, cross_val_score, GridSearchCV
+from sklearn.metrics import r2_score, confusion_matrix, ConfusionMatrixDisplay, accuracy_score, cohen_kappa_score, precision_score, recall_score, roc_auc_score
+from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
+```
+```{python}
+df = pd.read_csv("C:/Users/Eddie/Documents/GSB 544/Data/cannabis_full.csv")
+```
+
+# Part 1
+```{python}
+dat = df[(df["Type"] == "sativa") | (df["Type"] == "indica")]
+dat = dat.dropna()
+```
+
+I will select the roc auc metric as my metric of choice to act as a general metric for my models, given that roc auc does not lean into a specific situation as much as recall or precision.
+
+**LDA**
+LDA doesn't have any hyperparameters that need tuning.
+```{python}
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+
+X = dat.drop(["Type", "Strain", "Effects", "Flavor"], axis = 1)
+y = dat['Type']
+
+
+ct = ColumnTransformer(
+  [
+    ("standardize", 
+    StandardScaler(), 
+    make_column_selector(dtype_include=np.number))
+  ],
+  remainder = "passthrough"
+)
+
+lda_pipeline = Pipeline(
+  [("ct", ct),
+  ("lda", LinearDiscriminantAnalysis())]
+)
+
+lda_roc_auc = cross_val_score(lda_pipeline, X, y, cv = 5, scoring = 'roc_auc').mean()
+print(f'The cross-validated roc-auc is: {lda_roc_auc}')
+
+lda_fit = lda_pipeline.fit(X,y)
+
+y_train_ = pd.Series(lda_fit.predict(X), name = "Predicted")
+print(pd.crosstab(y, y_train_, margins=True))
+```
+
+**QDA**
+
+```{python}
+from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis
+
+X = dat.drop(["Type", "Strain", "Effects", "Flavor"], axis = 1)
+y = dat['Type']
+
+
+ct = ColumnTransformer(
+  [
+    ("standardize", 
+    StandardScaler(), 
+    make_column_selector(dtype_include=np.number))
+  ],
+  remainder = "passthrough"
+)
+
+qda_pipeline = Pipeline(
+  [("ct", ct),
+  ("qda", QuadraticDiscriminantAnalysis(reg_param = 1))]
+)
+
+degrees = {'qda__reg_param': [0.2,0.4,0.6,0.8,1]}
+gscv_ridge = GridSearchCV(qda_pipeline, degrees, cv = 5, scoring='roc_auc')
+gscv_ridge_fitted = gscv_ridge.fit(X,y)
+table = pd.DataFrame(data = {"degrees": [0.2,0.4,0.6,0.8,1], "scores": gscv_ridge_fitted.cv_results_['mean_test_score']})
+print(table)
+```
+Best hyperparameter for reg_param is 1.
+
+```{python}
+qda_roc_auc = cross_val_score(qda_pipeline, X, y, cv = 5, scoring = 'roc_auc').mean()
+print(f'The cross-validated roc-auc is: {qda_roc_auc}')
+
+qda_fit = qda_pipeline.fit(X,y)
+
+y_train_ = pd.Series(qda_fit.predict(X), name = "Predicted")
+print(pd.crosstab(y, y_train_, margins=True))
+```
+
+**SVC**
+
+```{python}
+from sklearn.svm import SVC
+
+svc_pipeline = Pipeline(
+  [("ct", ct),
+  ("svc", SVC(kernel = "linear", probability=True, C = 0.00001))]
+)
+
+degrees = {'svc__C': [0.000001,0.00001,0.0001,0.001,0.01]}
+gscv_ridge = GridSearchCV(svc_pipeline, degrees, cv = 5, scoring='roc_auc')
+gscv_ridge_fitted = gscv_ridge.fit(X,y)
+table = pd.DataFrame(data = {"degrees": [0.000001,0.00001,0.0001,0.001,0.01], "scores": gscv_ridge_fitted.cv_results_['mean_test_score']})
+print(table)
+```
+The best hyperparameter for C is 0.00001.
+
+```{python}
+svc_roc_auc = cross_val_score(svc_pipeline, X, y, cv = 5, scoring = 'roc_auc').mean()
+print(f'The cross-validated roc-auc is: {svc_roc_auc}')
+
+svc_fit = qda_pipeline.fit(X,y)
+
+y_train_ = pd.Series(svc_fit.predict(X), name = "Predicted")
+print(pd.crosstab(y, y_train_, margins=True))
+```
+
+**SVM**
+```{python}
+svm_pipeline = Pipeline(
+  [("ct", ct),
+  ("svm", SVC(kernel = "poly", probability=True, C = 10))]
+)
+
+degrees = {'svm__C': [0.01, 0.1, 1, 10, 100]}
+gscv_ridge = GridSearchCV(svm_pipeline, degrees, cv = 5, scoring='roc_auc')
+gscv_ridge_fitted = gscv_ridge.fit(X,y)
+table = pd.DataFrame(data = {"degrees": [0.01, 0.1, 1, 10, 100], "scores": gscv_ridge_fitted.cv_results_['mean_test_score']})
+print(table)
+```
+The best hyperparameter for C is 10.
+
+```{python}
+svm_roc_auc = cross_val_score(svm_pipeline, X, y, cv = 5, scoring = 'roc_auc').mean()
+print(f'The cross-validated roc-auc is: {svm_roc_auc}')
+
+svm_fit = svm_pipeline.fit(X,y)
+
+y_train_ = pd.Series(svm_fit.predict(X), name = "Predicted")
+print(pd.crosstab(y, y_train_, margins=True))
+```
+
+# Part 2
+**Q1**
+**Tree**
+```{python}
+df = df.dropna()
+
+X = df.drop(["Type", "Strain", "Effects", "Flavor"], axis = 1)
+y = df['Type']
+
+pipeline_tree = Pipeline(
+  [
+  ("decision_tree", DecisionTreeClassifier(max_depth=None, min_impurity_decrease = 0.01))]
+)
+
+degrees = {'decision_tree__min_impurity_decrease': [0, 0.01,0.001, 0.0001]}
+gscv_ridge = GridSearchCV(pipeline_tree, degrees, cv = 5, scoring='roc_auc_ovo')
+gscv_ridge_fitted = gscv_ridge.fit(X,y)
+table = pd.DataFrame(data = {"degrees": [0, 0.01, 0.001,0.0001], "scores": gscv_ridge_fitted.cv_results_['mean_test_score']})
+best_score_tree = table.iloc[1,0]
+
+print(table)
+print(f'The best roc auc metric is {best_score_tree}')
+```
+When trying to find the best metric, I used ROC AUC OVR and OVO to see which gave better scores on average and settled on OVO. It is important to note however that both OVR and OVO both gave me 0.01 as the best hyperparamter.
+
+
+```{python}
+tree_roc_auc = cross_val_score(pipeline_tree, X, y, cv = 5, scoring = 'roc_auc_ovo').mean()
+print(f'The cross-validated roc-auc is: {tree_roc_auc}')
+
+tree_fit = pipeline_tree.fit(X,y)
+
+y_train_ = pd.Series(tree_fit.predict(X), name = "Predicted")
+print(pd.crosstab(y, y_train_, margins=True))
+```
+
+
+```{python}
+from sklearn.tree import plot_tree
+
+plot_tree(tree_fit.named_steps["decision_tree"], feature_names = X.columns, filled=True)
+```
+From the plot we are able to see that the model found that the most influencial predictors were `Sleepy` and `Energetic`, suprisingly, the tree only had two splits, ending affter the `Energetic` split. We also found the "False" node after the first split to have the least amount of impurity.
+
+**Q2**
+**LDA**
+```{python}
+ct = ColumnTransformer(
+  [
+    ("standardize", 
+    StandardScaler(), 
+    make_column_selector(dtype_include=np.number))
+  ],
+  remainder = "passthrough"
+)
+
+lda_pipeline_mult = Pipeline(
+  [("ct", ct),
+  ("lda", LinearDiscriminantAnalysis())]
+)
+
+lda_roc_auc_mult = cross_val_score(lda_pipeline_mult, X, y, cv = 5, scoring = 'roc_auc_ovo').mean()
+print(f'The cross-validated roc-auc is: {lda_roc_auc_mult}')
+
+lda_fit_mult = lda_pipeline_mult.fit(X,y)
+
+y_train_ = pd.Series(lda_fit_mult.predict(X), name = "Predicted")
+print(pd.crosstab(y, y_train_, margins=True))
+```
+
+**QDA**
+```{python}
+ct = ColumnTransformer(
+  [
+    ("standardize", 
+    StandardScaler(), 
+    make_column_selector(dtype_include=np.number))
+  ],
+  remainder = "passthrough"
+)
+
+qda_pipeline_mult = Pipeline(
+  [("ct", ct),
+  ("qda", QuadraticDiscriminantAnalysis(reg_param = 1))]
+)
+
+degrees = {'qda__reg_param': [0.2,0.4,0.6,0.8,1]}
+gscv_ridge = GridSearchCV(qda_pipeline_mult, degrees, cv = 5, scoring='roc_auc_ovo')
+gscv_ridge_fitted = gscv_ridge.fit(X,y)
+table = pd.DataFrame(data = {"degrees": [0.2,0.4,0.6,0.8,1], "scores": gscv_ridge_fitted.cv_results_['mean_test_score']})
+print(table)
+```
+Best hyperparameter for reg_param is 1.
+
+```{python}
+qda_roc_auc_mult = cross_val_score(qda_pipeline_mult, X, y, cv = 5, scoring = 'roc_auc_ovo').mean()
+print(f'The cross-validated roc-auc is: {qda_roc_auc_mult}')
+
+qda_fit_mult = qda_pipeline_mult.fit(X,y)
+
+y_train_ = pd.Series(qda_fit_mult.predict(X), name = "Predicted")
+print(pd.crosstab(y, y_train_, margins=True))
+```
+
+**KNN**
+```{python}
+ct = ColumnTransformer(
+  [
+    ("standardize", 
+    StandardScaler(), 
+    make_column_selector(dtype_include=np.number))
+  ],
+  remainder = "passthrough"
+)
+
+knn = Pipeline(
+  [("ct", ct),
+  ("knn", KNeighborsClassifier(n_neighbors = 20))]
+)
+
+degrees = {'knn__n_neighbors': [5,10,15,20]}
+gscv_ridge = GridSearchCV(knn, degrees, cv = 5, scoring='roc_auc_ovo')
+gscv_ridge_fitted = gscv_ridge.fit(X,y)
+table = pd.DataFrame(data = {"degrees": [5,10,15,20], "scores": gscv_ridge_fitted.cv_results_['mean_test_score']})
+print(table)
+```
+Best hyperparameter for reg_param is 20.
+
+```{python}
+knn_roc_auc = cross_val_score(knn, X, y, cv = 5, scoring = 'roc_auc_ovo').mean()
+print(f'The cross-validated roc-auc is: {knn_roc_auc}')
+
+knn_fit = knn.fit(X,y)
+
+y_train_ = pd.Series(knn_fit.predict(X), name = "Predicted")
+print(pd.crosstab(y, y_train_, margins=True))
+```
+
+**Q3**
+The metrics were better in part one, much better in fact. We see from the confusion matricies that the strands that were actually `indica` or `stavia`, were much more often predicted as `hybrid`, this kind of mix up in the categories is what mostly lead to our lower metrics. These less-accurate predictions do make sense given what were are measuring however. Given our inputs such as `sleepy` and `energetic` the hybrid strands will be a mix of both indica and stavia, leading us to believe that strands that were fully one or the other (not hybrid) but maybe smoked by someone that has more moderate effects would be predicted to be hybrid (a middle ground between the two). 
+
+# Part 3
+**Q1**
+
+**Indica vs. Not Indica**
+
+*Logistic*
+
+```{python}
+df_new = df.copy()
+```
+```{python}
+df_new['indica'] = 1 * (df_new["Type"] == "indica")
+df_new['sativa'] = 1 * (df_new["Type"] == "sativa")
+df_new['hybrid'] = 1 * (df_new["Type"] == "hybrid")
+
+```
+
+```{python}
+X = df_new.drop(["Type", "Strain", "Effects", "Flavor", 'indica', 'sativa', 'hybrid'], axis = 1)
+y = df_new['indica']
+
+ct = ColumnTransformer(
+  [
+    ("standardize", 
+    StandardScaler(), 
+    make_column_selector(dtype_include=np.number))
+  ],
+  remainder = "passthrough"
+)
+
+logistic = Pipeline(
+  [("ct", ct),
+  ("logistic", LogisticRegression(max_iter = 1000, C = 0.001))]
+)
+
+degrees = {'logistic__C': [0.0001,0.001,0.01]}
+gscv_ridge = GridSearchCV(logistic, degrees, cv = 5, scoring='roc_auc_ovr')
+gscv_ridge_fitted = gscv_ridge.fit(X,y)
+table = pd.DataFrame(data = {"degrees": [0.0001,0.001,0.01], "scores": gscv_ridge_fitted.cv_results_['mean_test_score']})
+print(table)
+```
+Best hyperparameter for reg_param is 0.001.
+
+```{python}
+log_roc_auc = cross_val_score(logistic, X, y, cv = 5, scoring = 'roc_auc_ovr').mean()
+print(f'The cross-validated roc-auc is: {log_roc_auc}')
+
+log_fit = logistic.fit(X,y)
+
+y_train_ = pd.Series(log_fit.predict(X), name = "Predicted")
+print(pd.crosstab(y, y_train_, margins=True))
+```
+
+*SVC*
+
+```{python}
+svc_pipeline = Pipeline(
+  [("ct", ct),
+  ("svc", SVC(kernel = "linear", probability=True, C = 0.00001))]
+)
+
+degrees = {'svc__C': [0.000001,0.00001,0.0001,0.001,0.01]}
+gscv_ridge = GridSearchCV(svc_pipeline, degrees, cv = 5, scoring='roc_auc_ovr')
+gscv_ridge_fitted = gscv_ridge.fit(X,y)
+table = pd.DataFrame(data = {"degrees": [0.000001,0.00001,0.0001,0.001,0.01], "scores": gscv_ridge_fitted.cv_results_['mean_test_score']})
+print(table)
+```
+The best hyperparameter for C is 0.00001.
+
+```{python}
+svc_roc_auc = cross_val_score(svc_pipeline, X, y, cv = 5, scoring = 'roc_auc_ovr').mean()
+print(f'The cross-validated roc-auc is: {svc_roc_auc}')
+
+svc_fit = svc_pipeline.fit(X,y)
+
+y_train_ = pd.Series(svc_fit.predict(X), name = "Predicted")
+print(pd.crosstab(y, y_train_, margins=True))
+```
+
+**Sativa vs Not Sativa**
+
+*Logistic*
+
+
+```{python}
+X = df_new.drop(["Type", "Strain", "Effects", "Flavor", 'indica', 'sativa', 'hybrid'], axis = 1)
+y = df_new['sativa']
+```
+
+```{python}
+ct = ColumnTransformer(
+  [
+    ("standardize", 
+    StandardScaler(), 
+    make_column_selector(dtype_include=np.number))
+  ],
+  remainder = "passthrough"
+)
+
+logistic = Pipeline(
+  [("ct", ct),
+  ("logistic", LogisticRegression(max_iter = 1000, C = 0.000001))]
+)
+
+degrees = {'logistic__C': [0.000001,0.00001,0.0001,0.001,0.01,1]}
+gscv_ridge = GridSearchCV(logistic, degrees, cv = 5, scoring='roc_auc_ovr')
+gscv_ridge_fitted = gscv_ridge.fit(X,y)
+table = pd.DataFrame(data = {"degrees": [0.000001,0.00001,0.0001,0.001,0.01,1], "scores": gscv_ridge_fitted.cv_results_['mean_test_score']})
+print(table)
+```
+Best hyperparameter for reg_param is 0.000001.
+
+```{python}
+log_roc_auc = cross_val_score(logistic, X, y, cv = 5, scoring = 'roc_auc_ovr').mean()
+print(f'The cross-validated roc-auc is: {log_roc_auc}')
+
+log_fit = logistic.fit(X,y)
+
+y_train_ = pd.Series(log_fit.predict(X), name = "Predicted")
+print(pd.crosstab(y, y_train_, margins=True))
+```
+
+*SVC*
+
+```{python}
+svc_pipeline = Pipeline(
+  [("ct", ct),
+  ("svc", SVC(kernel = "linear", probability=True, C = 0.01))]
+)
+
+degrees = {'svc__C': [0.001,0.01,0.1,1]}
+gscv_ridge = GridSearchCV(svc_pipeline, degrees, cv = 5, scoring='roc_auc_ovr')
+gscv_ridge_fitted = gscv_ridge.fit(X,y)
+table = pd.DataFrame(data = {"degrees": [0.001,0.01,0.1,1], "scores": gscv_ridge_fitted.cv_results_['mean_test_score']})
+print(table)
+```
+The best hyperparameter for C is 0.01.
+
+```{python}
+svc_roc_auc = cross_val_score(svc_pipeline, X, y, cv = 5, scoring = 'roc_auc_ovr').mean()
+print(f'The cross-validated roc-auc is: {svc_roc_auc}')
+
+svc_fit = svc_pipeline.fit(X,y)
+
+y_train_ = pd.Series(svc_fit.predict(X), name = "Predicted")
+print(pd.crosstab(y, y_train_, margins=True))
+```
+
+**Hybrid vs Not Hybrid**
+
+*Logistic*
+
+
+```{python}
+X = df_new.drop(["Type", "Strain", "Effects", "Flavor", 'indica', 'sativa', 'hybrid'], axis = 1)
+y = df_new['hybrid']
+```
+
+```{python}
+ct = ColumnTransformer(
+  [
+    ("standardize", 
+    StandardScaler(), 
+    make_column_selector(dtype_include=np.number))
+  ],
+  remainder = "passthrough"
+)
+
+logistic = Pipeline(
+  [("ct", ct),
+  ("logistic", LogisticRegression(max_iter = 1000, C = 10))]
+)
+
+degrees = {'logistic__C': [0.01,1,10]}
+gscv_ridge = GridSearchCV(logistic, degrees, cv = 5, scoring='roc_auc_ovr')
+gscv_ridge_fitted = gscv_ridge.fit(X,y)
+table = pd.DataFrame(data = {"degrees": [0.01,1,10], "scores": gscv_ridge_fitted.cv_results_['mean_test_score']})
+print(table)
+```
+Best hyperparameter for reg_param is 10.
+
+```{python}
+log_roc_auc = cross_val_score(logistic, X, y, cv = 5, scoring = 'roc_auc_ovr').mean()
+print(f'The cross-validated roc-auc is: {log_roc_auc}')
+
+log_fit = logistic.fit(X,y)
+
+y_train_ = pd.Series(log_fit.predict(X), name = "Predicted")
+print(pd.crosstab(y, y_train_, margins=True))
+```
+
+*SVC*
+
+```{python}
+svc_pipeline = Pipeline(
+  [("ct", ct),
+  ("svc", SVC(kernel = "linear", probability=True, C = 0.1))]
+)
+
+degrees = {'svc__C': [0.001,0.01,0.1,1]}
+gscv_ridge = GridSearchCV(svc_pipeline, degrees, cv = 5, scoring='roc_auc_ovr')
+gscv_ridge_fitted = gscv_ridge.fit(X,y)
+table = pd.DataFrame(data = {"degrees": [0.001,0.01,0.1,1], "scores": gscv_ridge_fitted.cv_results_['mean_test_score']})
+print(table)
+```
+The best hyperparameter for C is 0.1.
+
+```{python}
+svc_roc_auc = cross_val_score(svc_pipeline, X, y, cv = 5, scoring = 'roc_auc_ovr').mean()
+print(f'The cross-validated roc-auc is: {svc_roc_auc}')
+
+svc_fit = svc_pipeline.fit(X,y)
+
+y_train_ = pd.Series(svc_fit.predict(X), name = "Predicted")
+print(pd.crosstab(y, y_train_, margins=True))
+```
+
+**Q2**
+
+The model that performed the best when distinguishing the target category from the rest was the Logistic Regression with the target category being `Indica`. The worst model was the logistic model with the target category being `Hybrid`. This makes sense intuituvely because of the same results we saw from the confusion matricies in the previous parts. The models have a hard time being accurate when predicting the hybrid strain because of the mix between the two strains, making the predictions with the `hybrid` response less accurate overall.
+
+**Q3**
+
+**Indica vs. Satvia**
+
+```{python}
+df_3 = df[(df["Type"] == "indica") | (df["Type"] == "sativa")]
+
+X = df_3.drop(["Type", "Strain", "Effects", "Flavor"], axis = 1)
+y = df_3['Type']
+```
+
+*Log*
+
+```{python}
+ct = ColumnTransformer(
+  [
+    ("standardize", 
+    StandardScaler(), 
+    make_column_selector(dtype_include=np.number))
+  ],
+  remainder = "passthrough"
+)
+
+logistic = Pipeline(
+  [("ct", ct),
+  ("logistic", LogisticRegression(max_iter = 1000, C = 100))]
+)
+
+degrees = {'logistic__C': [0.01,1,10,100,1000]}
+gscv_ridge = GridSearchCV(logistic, degrees, cv = 5, scoring='roc_auc_ovo')
+gscv_ridge_fitted = gscv_ridge.fit(X,y)
+table = pd.DataFrame(data = {"degrees": [0.01,1,10,100,1000], "scores": gscv_ridge_fitted.cv_results_['mean_test_score']})
+print(table)
+```
+Best hyperparameter for reg_param is 100.
+
+```{python}
+log_roc_auc = cross_val_score(logistic, X, y, cv = 5, scoring = 'roc_auc_ovo').mean()
+print(f'The cross-validated roc-auc is: {log_roc_auc}')
+
+log_fit = logistic.fit(X,y)
+
+y_train_ = pd.Series(log_fit.predict(X), name = "Predicted")
+print(pd.crosstab(y, y_train_, margins=True))
+```
+
+*SVC*
+
+```{python}
+svc_pipeline = Pipeline(
+  [("ct", ct),
+  ("svc", SVC(kernel = "linear", probability=True, C = 0.001))]
+)
+
+degrees = {'svc__C': [0.001,0.01,0.1,1]}
+gscv_ridge = GridSearchCV(svc_pipeline, degrees, cv = 5, scoring='roc_auc_ovo')
+gscv_ridge_fitted = gscv_ridge.fit(X,y)
+table = pd.DataFrame(data = {"degrees": [0.001,0.01,0.1,1], "scores": gscv_ridge_fitted.cv_results_['mean_test_score']})
+print(table)
+```
+The best hyperparameter for C is 0.001.
+
+```{python}
+svc_roc_auc = cross_val_score(svc_pipeline, X, y, cv = 5, scoring = 'roc_auc_ovo').mean()
+print(f'The cross-validated roc-auc is: {svc_roc_auc}')
+
+svc_fit = svc_pipeline.fit(X,y)
+
+y_train_ = pd.Series(svc_fit.predict(X), name = "Predicted")
+print(pd.crosstab(y, y_train_, margins=True))
+```
+
+**Indica Vs. Hybrid**
+
+```{python}
+df_4 = df[(df["Type"] == "indica") | (df["Type"] == "hybrid")]
+
+X = df_4.drop(["Type", "Strain", "Effects", "Flavor"], axis = 1)
+y = df_4['Type']
+```
+
+*Log*
+
+```{python}
+ct = ColumnTransformer(
+  [
+    ("standardize", 
+    StandardScaler(), 
+    make_column_selector(dtype_include=np.number))
+  ],
+  remainder = "passthrough"
+)
+
+logistic = Pipeline(
+  [("ct", ct),
+  ("logistic", LogisticRegression(max_iter = 1000, C = 0.001))]
+)
+
+degrees = {'logistic__C': [0.0001,0.001,0.01,1,10,100,1000]}
+gscv_ridge = GridSearchCV(logistic, degrees, cv = 5, scoring='roc_auc_ovo')
+gscv_ridge_fitted = gscv_ridge.fit(X,y)
+table = pd.DataFrame(data = {"degrees": [0.0001,0.001,0.01,1,10,100,1000], "scores": gscv_ridge_fitted.cv_results_['mean_test_score']})
+print(table)
+```
+Best hyperparameter for reg_param is 0.001.
+
+```{python}
+log_roc_auc = cross_val_score(logistic, X, y, cv = 5, scoring = 'roc_auc_ovo').mean()
+print(f'The cross-validated roc-auc is: {log_roc_auc}')
+
+log_fit = logistic.fit(X,y)
+
+y_train_ = pd.Series(log_fit.predict(X), name = "Predicted")
+print(pd.crosstab(y, y_train_, margins=True))
+```
+
+*SVC*
+
+```{python}
+svc_pipeline = Pipeline(
+  [("ct", ct),
+  ("svc", SVC(kernel = "linear", probability=True, C = 0.001))]
+)
+
+degrees = {'svc__C': [0.001,0.01,0.1,1]}
+gscv_ridge = GridSearchCV(svc_pipeline, degrees, cv = 5, scoring='roc_auc_ovo')
+gscv_ridge_fitted = gscv_ridge.fit(X,y)
+table = pd.DataFrame(data = {"degrees": [0.001,0.01,0.1,1], "scores": gscv_ridge_fitted.cv_results_['mean_test_score']})
+print(table)
+```
+The best hyperparameter for C is 0.001.
+
+```{python}
+svc_roc_auc = cross_val_score(svc_pipeline, X, y, cv = 5, scoring = 'roc_auc_ovo').mean()
+print(f'The cross-validated roc-auc is: {svc_roc_auc}')
+
+svc_fit = svc_pipeline.fit(X,y)
+
+y_train_ = pd.Series(svc_fit.predict(X), name = "Predicted")
+print(pd.crosstab(y, y_train_, margins=True))
+```
+
+**Hybrid vs. Sativa**
+
+```{python}
+df_5 = df[(df["Type"] == "sativa") | (df["Type"] == "hybrid")]
+
+X = df_5.drop(["Type", "Strain", "Effects", "Flavor"], axis = 1)
+y = df_5['Type']
+```
+
+*Log*
+
+```{python}
+ct = ColumnTransformer(
+  [
+    ("standardize", 
+    StandardScaler(), 
+    make_column_selector(dtype_include=np.number))
+  ],
+  remainder = "passthrough"
+)
+
+logistic = Pipeline(
+  [("ct", ct),
+  ("logistic", LogisticRegression(max_iter = 1000, C = 0.0001))]
+)
+
+degrees = {'logistic__C': [0.0001,0.001,0.01,1,10,100,1000]}
+gscv_ridge = GridSearchCV(logistic, degrees, cv = 5, scoring='roc_auc_ovo')
+gscv_ridge_fitted = gscv_ridge.fit(X,y)
+table = pd.DataFrame(data = {"degrees": [0.0001,0.001,0.01,1,10,100,1000], "scores": gscv_ridge_fitted.cv_results_['mean_test_score']})
+print(table)
+```
+Best hyperparameter for reg_param is 0.0001.
+
+```{python}
+log_roc_auc = cross_val_score(logistic, X, y, cv = 5, scoring = 'roc_auc_ovo').mean()
+print(f'The cross-validated roc-auc is: {log_roc_auc}')
+
+log_fit = logistic.fit(X,y)
+
+y_train_ = pd.Series(log_fit.predict(X), name = "Predicted")
+print(pd.crosstab(y, y_train_, margins=True))
+```
+
+*SVC*
+
+```{python}
+svc_pipeline = Pipeline(
+  [("ct", ct),
+  ("svc", SVC(kernel = "linear", probability=True, C = 0.001))]
+)
+
+degrees = {'svc__C': [0.001,0.01,0.1,1]}
+gscv_ridge = GridSearchCV(svc_pipeline, degrees, cv = 5, scoring='roc_auc_ovo')
+gscv_ridge_fitted = gscv_ridge.fit(X,y)
+table = pd.DataFrame(data = {"degrees": [0.001,0.01,0.1,1], "scores": gscv_ridge_fitted.cv_results_['mean_test_score']})
+print(table)
+```
+The best hyperparameter for C is 0.001.
+
+```{python}
+svc_roc_auc = cross_val_score(svc_pipeline, X, y, cv = 5, scoring = 'roc_auc_ovo').mean()
+print(f'The cross-validated roc-auc is: {svc_roc_auc}')
+
+svc_fit = svc_pipeline.fit(X,y)
+
+y_train_ = pd.Series(svc_fit.predict(X), name = "Predicted")
+print(pd.crosstab(y, y_train_, margins=True))
+```
+
+**Q4**
+The model that performed the best of the six was the SVC model when distinguishing Satvia from Indica. This makes sense because in SVC our goal is to maximize the margin between the two specific classes. In this case, there is more of a distinction between Satvia and Indica rather than either of the two types vs hybrid. This allows for SVC to be more consistent with its predictions. The worst model ended up being the SVC model for Hybrid vs. Satvia. This makes sense given that its harder for the model to distinguish those that are hybrid from those that are Satvia, however, we would expect similar predictions from the Hybrid vs. Indica model given this logic. 
+
+**Q5**
+For logisitc regression, when we input three classes, it would by default perform the OvR approach. This is because logistic regression looks at all of our outcomes and then makes predictions/probabilities based on the inputs that are provided. On the other hand, SVC will use the OvO approach since it tried to maximze the margin between two different classes (one combination) and then will move to maximize the margin between two different classes (another combination), making the approach one-to-one. 
