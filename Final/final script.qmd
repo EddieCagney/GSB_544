@@ -1,0 +1,454 @@
+---
+title: "GSB 544 Final"
+author: "Eddie Cagney"
+format:
+  html:
+    embed-resources: true
+    code-fold: true
+editor: source
+execute:
+  echo: true
+  error: true
+  message: false
+  warning: false
+---
+
+```{python}
+import pandas as pd
+import numpy as np
+from sklearn.pipeline import Pipeline
+from sklearn.neighbors import KNeighborsRegressor, KNeighborsClassifier
+from sklearn.tree import DecisionTreeRegressor
+from sklearn.pipeline import Pipeline
+from sklearn.compose import make_column_selector, ColumnTransformer
+from sklearn.preprocessing import StandardScaler, OneHotEncoder, PolynomialFeatures
+from sklearn.linear_model import LinearRegression, Ridge, Lasso, ElasticNet, LogisticRegression
+from sklearn.model_selection import train_test_split, cross_val_score, GridSearchCV
+from sklearn.metrics import r2_score, confusion_matrix, ConfusionMatrixDisplay, accuracy_score, cohen_kappa_score, precision_score, recall_score, roc_auc_score
+from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
+```
+
+# Load Data 
+
+```{python}
+df = pd.read_csv("C:/Users/Eddie/Documents/GSB 544/Data/CAH-201803-train.csv")
+
+```
+
+```{python}
+print(len(df[df["political_affiliation"] == "Democrat"]))
+print(len(df[df["political_affiliation"] == "Republican"]))
+print(len(df[df["political_affiliation"] == "Independent"]))
+
+```
+
+# Classification
+
+```{python}
+X = df.drop(["political_affiliation"], axis = 1)
+y = df['political_affiliation']
+```
+
+# KNN
+```{python}
+ct = ColumnTransformer(
+  [
+    ("dummify", 
+    OneHotEncoder(sparse_output = False, handle_unknown='ignore'),
+    make_column_selector(dtype_include=object)),
+    ("standardize", 
+    StandardScaler(), 
+    make_column_selector(dtype_include=np.number))
+  ],
+  remainder = "passthrough"
+)
+
+pipeline_knn = Pipeline(
+  [("preprocessing", ct),
+  ("knn", KNeighborsClassifier(n_neighbors = 25))]
+)
+
+degrees = {'knn__n_neighbors': [5,10,15,20,25,30,35,40,45,50]}
+gscv_ridge = GridSearchCV(pipeline_knn, degrees, cv = 5, scoring='f1_macro')
+gscv_ridge_fitted = gscv_ridge.fit(X,y)
+table = pd.DataFrame(data = {"degrees": [5,10,15,20,25,30,35,40,45,50], "scores": gscv_ridge_fitted.cv_results_['mean_test_score']})
+best_score_knn = table.iloc[3,1]
+
+print(table)
+print(f'The best f1_score metric is {best_score_knn}')
+
+best_n = gscv_ridge_fitted.best_params_['knn__n_neighbors']
+
+pipeline_knn = Pipeline(
+  [("preprocessing", ct),
+  ("knn", KNeighborsClassifier(n_neighbors = best_n))]
+)
+
+knn = pipeline_knn.fit(X,y)
+
+y_train_ = pd.Series(knn.predict(X), name = "Predicted")
+print(pd.crosstab(y, y_train_, margins=True))
+```
+
+# Tree
+
+```{python}
+pipeline_tree = Pipeline(
+  [
+  ("preprocessing", ct),
+  ("decision_tree", DecisionTreeClassifier(max_depth=None, min_samples_leaf = 12))]
+)
+
+degrees = {'decision_tree__min_samples_leaf': [1,9,10,11,12,13,14,15]}
+gscv_ridge = GridSearchCV(pipeline_tree, degrees, cv = 5, scoring='f1_macro')
+gscv_ridge_fitted = gscv_ridge.fit(X,y)
+table = pd.DataFrame(data = {"degrees": [1,9,10,11,12,13,14,15], "scores": gscv_ridge_fitted.cv_results_['mean_test_score']})
+best_score_tree = table.iloc[1,1]
+
+print(table)
+print(f'The best f1 metric is {best_score_tree}')
+```
+
+```{python}
+tree_f1 = cross_val_score(pipeline_tree, X, y, cv = 5, scoring = 'f1_macro').mean()
+print(f'The cross-validated f1_macro is: {tree_f1}')
+
+tree_fit = pipeline_tree.fit(X,y)
+
+y_train_ = pd.Series(tree_fit.predict(X), name = "Predicted")
+print(pd.crosstab(y, y_train_, margins=True))
+```
+
+# LDA
+
+```{python}
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+
+lda_pipeline_mult = Pipeline(
+  [("ct", ct),
+  ("lda", LinearDiscriminantAnalysis(solver='lsqr', shrinkage=None))]
+)
+
+degrees = {'lda__shrinkage': [0.2,0.4,0.6,0.8,1]}
+gscv_ridge = GridSearchCV(lda_pipeline_mult, degrees, cv = 5, scoring='f1_macro')
+gscv_ridge_fitted = gscv_ridge.fit(X,y)
+table = pd.DataFrame(data = {"degrees": [0.2,0.4,0.6,0.8,1], "scores": gscv_ridge_fitted.cv_results_['mean_test_score']})
+
+lda_mult_f1 = cross_val_score(lda_pipeline_mult, X, y, cv = 5, scoring = 'f1_macro').mean()
+print(f'The cross-validated f1_macro is: {lda_mult_f1}')
+
+lda_fit_mult = lda_pipeline_mult.fit(X,y)
+
+y_train_ = pd.Series(lda_fit_mult.predict(X), name = "Predicted")
+print(pd.crosstab(y, y_train_, margins=True))
+```
+
+# QDA
+```{python}
+from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis
+
+qda_pipeline = Pipeline(
+  [("ct", ct),
+  ("qda", QuadraticDiscriminantAnalysis(reg_param = 0.4))]
+)
+
+degrees = {'qda__reg_param': [0.2,0.4,0.6,0.8,1]}
+gscv_ridge = GridSearchCV(qda_pipeline, degrees, cv = 5, scoring='f1_macro')
+gscv_ridge_fitted = gscv_ridge.fit(X,y)
+table = pd.DataFrame(data = {"degrees": [0.2,0.4,0.6,0.8,1], "scores": gscv_ridge_fitted.cv_results_['mean_test_score']})
+print(table)
+```
+
+```{python}
+qda_f1_macro = cross_val_score(qda_pipeline, X, y, cv = 5, scoring = 'f1_macro').mean()
+print(f'The cross-validated f1_macro is: {qda_f1_macro}')
+
+qda_fit = qda_pipeline.fit(X,y)
+
+y_train_ = pd.Series(qda_fit.predict(X), name = "Predicted")
+print(pd.crosstab(y, y_train_, margins=True))
+```
+
+
+
+# Test Data
+```{python}
+test_data = pd.read_csv("C:/Users/Eddie/Documents/GSB 544/Data/CAH-201803-test.csv")
+```
+
+
+# Final Preds
+
+```{python}
+final_model_fit = lda_pipeline_mult.fit(X,y)
+```
+
+```{python}
+final_predictions = pd.DataFrame(
+    {"id_num": test_data['id_num'],
+    "political_affiliation_predicted": final_model_fit.predict(test_data)}
+)
+
+```
+
+
+```{python}
+final_predictions.to_csv('C:/Users/Eddie/Documents/GSB 544/classification_pred.csv', index=False)
+
+```
+
+# Regression
+
+```{python}
+df_reg = pd.read_csv("C:/Users/Eddie/Documents/GSB 544/Data/train_new.csv")
+dat = df_reg.copy()
+dat = dat.dropna()
+
+dat["SalePrice_log"] = np.log1p(dat["SalePrice"])
+
+```
+
+```{python}
+X = dat.drop(["SalePrice", "PID", "SalePrice_log"], axis = 1)
+y = dat["SalePrice_log"]
+```
+
+```{python}
+numerical_pipe = Pipeline([
+  ("scaler", StandardScaler()),
+  ("interact", PolynomialFeatures(
+    degree = 2, 
+    interaction_only = True,
+    include_bias = False
+  ))
+])
+
+ct_int = ColumnTransformer(
+  transformers = [
+    ("num", numerical_pipe, make_column_selector(dtype_include= np.number)),
+    ("cat", OneHotEncoder(handle_unknown = "ignore"), make_column_selector(dtype_include=object))
+  ], remainder = "drop"
+).set_output(transform = "pandas")
+```
+
+```{python}
+########################### maybe dont use
+ct_int2 = ColumnTransformer(
+    [
+        ("interaction", PolynomialFeatures(interaction_only = True), ["scaler__Lot Area", "cat__Street_Grvl"])
+    ],
+    remainder = 'passthrough'
+).set_output(transform = "pandas")
+```
+
+# Linear
+```{python}
+ct = ColumnTransformer(
+  [
+    ("dummify", 
+    OneHotEncoder(sparse_output = False, handle_unknown='ignore'),
+    make_column_selector(dtype_include=object)),
+    ("standardize", 
+    StandardScaler(), 
+    make_column_selector(dtype_include=np.number))
+  ],
+  remainder = "passthrough"
+).set_output(transform = "pandas")
+
+
+lr_pipeline = Pipeline(
+  [("preprocessing", ct),
+  ("preprocessing2", ct_int),
+  ("linear_regression", LinearRegression())]
+)
+
+cv = cross_val_score(lr_pipeline, X, y, cv = 5, scoring = 'neg_root_mean_squared_error')
+avg_mse = -cv.mean()
+print(f'The expected MSE for prediciting {round(avg_mse,4)}')
+```
+
+
+# Ridge
+
+```{python}
+ridge_pipeline = Pipeline(
+  [("preprocessing", ct),
+  ("preprocessing2", ct_int),
+  ("ridge_regression", Ridge(alpha = 1000))]
+)
+
+degrees_ridge = {'ridge_regression__alpha': [0.01, 0.1, 1, 10, 100, 1000, 10000, 100000]}
+
+gscv_ridge = GridSearchCV(ridge_pipeline, degrees_ridge, cv = 5, scoring='neg_root_mean_squared_error')
+gscv_ridge_fitted = gscv_ridge.fit(X,y)
+print(pd.DataFrame(data = {"degrees": [0.01, 0.1, 1, 10, 100, 1000,10000,100000], "scores": gscv_ridge_fitted.cv_results_['mean_test_score']}))
+
+cv = cross_val_score(ridge_pipeline, X, y, cv = 5, scoring = 'neg_root_mean_squared_error')
+avg_mse = -cv.mean()
+print(f'The expected MSE for prediciting {round(avg_mse,4)}')
+
+```
+
+# LASSO
+```{python}
+lasso_pipeline = Pipeline(
+  [("preprocessing", ct),
+  ("preprocessing2", ct_int),
+  ("lasso_regression", Lasso(alpha = 10))]
+)
+
+degrees_lasso = {'lasso_regression__alpha': [0.01, 0.1, 1, 10, 100]}
+
+gscv_lasso = GridSearchCV(lasso_pipeline, degrees_lasso, cv = 5, scoring='neg_root_mean_squared_error')
+gscv_lasso_fitted = gscv_lasso.fit(X,y)
+
+print(pd.DataFrame(data = {"degrees": [0.01, 0.1, 1, 10, 100], "scores": gscv_lasso_fitted.cv_results_['mean_test_score']}))
+
+cv = cross_val_score(lasso_pipeline, X, y, cv = 5, scoring = 'neg_root_mean_squared_error')
+avg_mse = -cv.mean()
+print(f'The expected MSE for prediciting {round(avg_mse,4)}')
+```
+
+# Elastic Net
+
+```{python}
+elastic_pipeline = Pipeline(
+  [("preprocessing", ct),
+  ("preprocessing2", ct_int),
+  ("elastic_net", ElasticNet(alpha = 0.005, l1_ratio = 0.65))]
+)
+
+degrees_elastic = {'elastic_net__alpha': [0.0001,0.001,0.01, 0.1]}
+degrees_elastic2 = {'elastic_net__l1_ratio': [0.2,0.4,0.6,0.8]}
+
+gscv_elastic = GridSearchCV(elastic_pipeline, degrees_elastic, cv = 5, scoring='neg_root_mean_squared_error')
+gscv_elastic2 = GridSearchCV(elastic_pipeline, degrees_elastic2, cv = 5, scoring='neg_root_mean_squared_error')
+
+gscv_elastic_fitted = gscv_elastic.fit(X,y)
+gscv_elastic_fitted2 = gscv_elastic2.fit(X,y)
+
+
+print(pd.DataFrame(data = {"degrees": [0.0001,0.001,0.01, 0.1], "scores": gscv_elastic_fitted.cv_results_['mean_test_score']}))
+print(pd.DataFrame(data = {"degrees": [0.2,0.4,0.6,0.8], "scores": gscv_elastic_fitted2.cv_results_['mean_test_score']}))
+
+cv_elastic = cross_val_score(elastic_pipeline, X, y, cv = 5, scoring = 'neg_root_mean_squared_error')
+avg_mse_elastic = -cv_elastic.mean()
+print(f'The expected MSE would be {round(avg_mse_elastic,4)}')
+```
+
+```{python}
+elas = elastic_pipeline.fit(X,y)
+ela_coef_names = elas.named_steps["preprocessing2"].get_feature_names_out()
+print(ela_coef_names)
+```
+
+
+
+
+# Trying new thing
+
+
+```{python}
+df_reg = pd.read_csv("C:/Users/Eddie/Documents/GSB 544/Data/train_new.csv")
+da = df_reg.copy()
+da = da.dropna()
+
+da["SalePrice_log"] = np.log1p(da["SalePrice"])
+
+```
+
+```{python}
+X = da.drop(["SalePrice", "PID", "SalePrice_log"], axis = 1)
+y = da["SalePrice_log"]
+```
+
+
+```{python}
+from sklearn.impute import SimpleImputer
+
+numeric_features = X.select_dtypes(include=np.number).columns
+categorical_features = X.select_dtypes(include="object").columns
+
+numeric_pipe = Pipeline([
+    ("imputer", SimpleImputer(strategy="median")),
+    ("scaler", StandardScaler()),
+    ("poly", PolynomialFeatures(degree=2,
+                                interaction_only=True,
+                                include_bias=False))
+])
+
+categorical_pipe = Pipeline([
+    ("imputer", SimpleImputer(strategy="most_frequent")),
+    ("onehot", OneHotEncoder(handle_unknown="ignore"))
+])
+
+preprocess = ColumnTransformer(
+    [
+        ("num", numeric_pipe, numeric_features),
+        ("cat", categorical_pipe, categorical_features),
+    ]
+)
+
+```
+
+
+```{python}
+elastic_pipeline = Pipeline([
+    ("preprocess", preprocess),
+    ("elastic", ElasticNet(max_iter=10000, alpha = 0.001, l1_ratio = 0.6))
+])
+
+param_grid_elastic = {
+    "elastic__alpha": [0.0001, 0.001, 0.01, 0.1],
+    "elastic__l1_ratio": [0.2, 0.4, 0.6, 0.8]
+}
+
+gscv_elastic = GridSearchCV(
+    elastic_pipeline,
+    param_grid_elastic,
+    cv=5,
+    scoring="neg_root_mean_squared_error"
+)
+
+gscv_elastic.fit(X, y)
+
+print("Best params:", gscv_elastic.best_params_)
+print("Best CV RMSE:", -gscv_elastic.best_score_)
+
+best_elastic = gscv_elastic.best_estimator_
+
+
+```
+
+```{python}
+cv_elastic = cross_val_score(elastic_pipeline, X, y, cv = 5, scoring = 'neg_root_mean_squared_error')
+avg_mse_elastic = -cv_elastic.mean()
+print(f'The expected RMSE would be {round(avg_mse_elastic,4)}')
+
+```
+
+# Final reg preds
+
+```{python}
+test_data = pd.read_csv("C:/Users/Eddie/Documents/GSB 544/Data/test_new.csv")
+```
+
+```{python}
+final_model_fit = elastic_pipeline.fit(X,y)
+```
+
+```{python}
+final_predictions = pd.DataFrame(
+    {"PID": test_data['PID'],
+    "SalePrice": final_model_fit.predict(test_data)}
+)
+
+final_predictions["SalePrice"] = np.expm1(final_predictions["SalePrice"])
+
+```
+
+
+```{python}
+final_predictions.to_csv('C:/Users/Eddie/Documents/GSB 544/regression_pred_final_final_attempt.csv', index=False)
+
+```

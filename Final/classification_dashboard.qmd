@@ -1,0 +1,195 @@
+---
+title: "Final Dashboard Classification"
+format: 
+    dashboard:
+        theme: default
+        orientation: columns
+jupyter: python3   
+---
+
+```{python}
+import pandas as pd
+import numpy as np
+from sklearn.pipeline import Pipeline
+from sklearn.neighbors import KNeighborsRegressor, KNeighborsClassifier
+from sklearn.tree import DecisionTreeRegressor
+from sklearn.pipeline import Pipeline
+from sklearn.compose import make_column_selector, ColumnTransformer
+from sklearn.preprocessing import StandardScaler, OneHotEncoder, PolynomialFeatures
+from sklearn.linear_model import LinearRegression, Ridge, Lasso, ElasticNet, LogisticRegression
+from sklearn.model_selection import train_test_split, cross_val_score, GridSearchCV
+from sklearn.metrics import r2_score, confusion_matrix, ConfusionMatrixDisplay, accuracy_score, cohen_kappa_score, precision_score, recall_score, roc_auc_score
+from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
+from plotnine import *
+
+```
+
+
+```{python}
+df = pd.read_csv("C:/Users/Eddie/Documents/GSB 544/Data/CAH-201803-train.csv")
+predictions_test = pd.read_csv("C:/Users/Eddie/Documents/GSB 544/classification_pred.csv")
+```
+
+
+```{python}
+X = df.drop(["political_affiliation"], axis = 1)
+y = df['political_affiliation']
+```
+
+```{python}
+ct = ColumnTransformer(
+  [
+    ("dummify", 
+    OneHotEncoder(sparse_output = False, handle_unknown='ignore'),
+    make_column_selector(dtype_include=object)),
+    ("standardize", 
+    StandardScaler(), 
+    make_column_selector(dtype_include=np.number))
+  ],
+  remainder = "passthrough"
+)
+```
+
+
+
+```{python}
+# KNN
+ct = ColumnTransformer(
+  [
+    ("dummify", 
+    OneHotEncoder(sparse_output = False, handle_unknown='ignore'),
+    make_column_selector(dtype_include=object)),
+    ("standardize", 
+    StandardScaler(), 
+    make_column_selector(dtype_include=np.number))
+  ],
+  remainder = "passthrough"
+)
+
+pipeline_knn = Pipeline(
+  [("preprocessing", ct),
+  ("knn", KNeighborsClassifier(n_neighbors = 25))]
+)
+
+degrees = {'knn__n_neighbors': [5,10,15,20,25,30,35,40,45,50]}
+gscv_ridge = GridSearchCV(pipeline_knn, degrees, cv = 5, scoring='f1_macro')
+gscv_ridge_fitted = gscv_ridge.fit(X,y)
+table = pd.DataFrame(data = {"degrees": [5,10,15,20,25,30,35,40,45,50], "scores": gscv_ridge_fitted.cv_results_['mean_test_score']})
+best_score_knn = table.iloc[3,1]
+
+
+best_n = gscv_ridge_fitted.best_params_['knn__n_neighbors']
+
+pipeline_knn = Pipeline(
+  [("preprocessing", ct),
+  ("knn", KNeighborsClassifier(n_neighbors = best_n))]
+)
+
+knn = pipeline_knn.fit(X,y)
+
+```
+
+
+```{python}
+# Tree
+pipeline_tree = Pipeline(
+  [
+  ("preprocessing", ct),
+  ("decision_tree", DecisionTreeClassifier(max_depth=None, min_samples_leaf = 12))]
+)
+
+degrees = {'decision_tree__min_samples_leaf': [1,9,10,11,12,13,14,15]}
+gscv_ridge = GridSearchCV(pipeline_tree, degrees, cv = 5, scoring='f1_macro')
+gscv_ridge_fitted = gscv_ridge.fit(X,y)
+table = pd.DataFrame(data = {"degrees": [1,9,10,11,12,13,14,15], "scores": gscv_ridge_fitted.cv_results_['mean_test_score']})
+best_score_tree = table.iloc[1,1]
+
+tree_fit = pipeline_tree.fit(X,y)
+
+```
+
+
+
+```{python}
+#################LDA
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+
+lda_pipeline_mult = Pipeline(
+  [("ct", ct),
+  ("lda", LinearDiscriminantAnalysis(solver='lsqr', shrinkage=None))]
+)
+
+degrees = {'lda__shrinkage': [0.2,0.4,0.6,0.8,1]}
+gscv_ridge = GridSearchCV(lda_pipeline_mult, degrees, cv = 5, scoring='f1_macro')
+gscv_ridge_fitted = gscv_ridge.fit(X,y)
+table = pd.DataFrame(data = {"degrees": [0.2,0.4,0.6,0.8,1], "scores": gscv_ridge_fitted.cv_results_['mean_test_score']})
+
+lda_mult_f1 = cross_val_score(lda_pipeline_mult, X, y, cv = 5, scoring = 'f1_macro').mean()
+
+lda_fit_mult = lda_pipeline_mult.fit(X,y)
+
+y_train_lda = pd.Series(lda_fit_mult.predict(X), name = "Predicted")
+```
+
+```{python}
+#################QDA
+from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis
+
+qda_pipeline = Pipeline(
+  [("ct", ct),
+  ("qda", QuadraticDiscriminantAnalysis(reg_param = 0.4))]
+)
+
+degrees = {'qda__reg_param': [0.2,0.4,0.6,0.8,1]}
+gscv_ridge = GridSearchCV(qda_pipeline, degrees, cv = 5, scoring='f1_macro')
+gscv_ridge_fitted = gscv_ridge.fit(X,y)
+table = pd.DataFrame(data = {"degrees": [0.2,0.4,0.6,0.8,1], "scores": gscv_ridge_fitted.cv_results_['mean_test_score']})
+```
+
+```{python}
+qda_f1_macro = cross_val_score(qda_pipeline, X, y, cv = 5, scoring = 'f1_macro').mean()
+
+qda_fit = qda_pipeline.fit(X,y)
+
+y_train_ = pd.Series(qda_fit.predict(X), name = "Predicted")
+```
+
+## Column {width = 50%}
+```{python}
+#| title: Test Metrics for different Classification Models
+#| height: 38%
+model_metric_deets = {
+    "Model": ["K Nearest Neighbors", "Decision Tree", "Linear Discriminant Analysis", "Quadratic Discriminant Analysis"],
+    "Cross-validated F1 Macro Score": [best_score_knn, best_score_tree, lda_mult_f1, qda_f1_macro]
+}
+
+model_metric_df = pd.DataFrame(model_metric_deets)
+print(model_metric_df.to_string(index=False))
+```
+
+```{python}
+#| title: Best Test Metric (Linear Discriminent Analysis)
+#| height: 20%
+print(round(lda_mult_f1,4))
+```
+
+```{python}
+#| title: Predictions on Actual Party Affiliation
+#| height: 42%
+print(pd.crosstab(y, y_train_lda, margins=True))
+```
+
+## Column {width = 50%}
+```{python}
+#| title: Heatmap Representing Consistency of LDA Model
+confusion = confusion_matrix(y, y_train_lda, labels = ["Democrat", "Independent", "Republican"]) 
+visual = ConfusionMatrixDisplay(confusion_matrix = confusion, display_labels = ["Democrat", "Independent", "Republican"])
+visual.plot()
+```
+
+
+```{python}
+#| title: Model Takeaways
+#| height: 25%
+print(f'- Denser portions on our plot align with predictions that were correct\n- Allows confidence in the model and its predictive capability')
+```

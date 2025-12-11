@@ -1,0 +1,193 @@
+---
+title: "Final Dashboard Regression"
+format: 
+    dashboard:
+        theme: default
+        orientation: columns
+jupyter: python3   
+---
+
+
+```{python}
+import pandas as pd
+import numpy as np
+from sklearn.pipeline import Pipeline
+from sklearn.neighbors import KNeighborsRegressor, KNeighborsClassifier
+from sklearn.tree import DecisionTreeRegressor
+from sklearn.pipeline import Pipeline
+from sklearn.compose import make_column_selector, ColumnTransformer
+from sklearn.preprocessing import StandardScaler, OneHotEncoder, PolynomialFeatures
+from sklearn.linear_model import LinearRegression, Ridge, Lasso, ElasticNet, LogisticRegression
+from sklearn.model_selection import train_test_split, cross_val_score, GridSearchCV
+from sklearn.metrics import r2_score, confusion_matrix, ConfusionMatrixDisplay, accuracy_score, cohen_kappa_score, precision_score, recall_score, roc_auc_score
+from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
+from plotnine import *
+from sklearn.impute import SimpleImputer
+```
+
+```{python}
+df_reg = pd.read_csv("C:/Users/Eddie/Documents/GSB 544/Data/train_new.csv")
+da = df_reg.copy()
+da = da.dropna()
+
+da["SalePrice_log"] = np.log1p(da["SalePrice"])
+
+```
+
+```{python}
+X = da.drop(["SalePrice", "PID", "SalePrice_log"], axis = 1)
+y = da["SalePrice_log"]
+```
+
+
+```{python}
+numeric_features = X.select_dtypes(include=np.number).columns
+categorical_features = X.select_dtypes(include="object").columns
+
+numeric_pipe = Pipeline([
+    ("imputer", SimpleImputer(strategy="median")),
+    ("scaler", StandardScaler()),
+    ("poly", PolynomialFeatures(degree=2,
+                                interaction_only=True,
+                                include_bias=False))
+])
+
+categorical_pipe = Pipeline([
+    ("imputer", SimpleImputer(strategy="most_frequent")),
+    ("onehot", OneHotEncoder(handle_unknown="ignore"))
+])
+
+preprocess = ColumnTransformer(
+    [
+        ("num", numeric_pipe, numeric_features),
+        ("cat", categorical_pipe, categorical_features),
+    ]
+)
+
+```
+
+
+```{python}
+elastic_pipeline = Pipeline([
+    ("preprocess", preprocess),
+    ("elastic", ElasticNet(max_iter=10000, alpha = 0.001, l1_ratio = 0.6))
+])
+
+param_grid_elastic = {
+    "elastic__alpha": [0.0001, 0.001, 0.01, 0.1],
+    "elastic__l1_ratio": [0.2, 0.4, 0.6, 0.8]
+}
+
+gscv_elastic = GridSearchCV(
+    elastic_pipeline,
+    param_grid_elastic,
+    cv=5,
+    scoring="neg_root_mean_squared_error"
+)
+
+gsvc_model_fit = gscv_elastic.fit(X, y)
+
+best_elastic = gscv_elastic.best_estimator_
+
+
+```
+
+```{python}
+cv_elastic = cross_val_score(elastic_pipeline, X, y, cv = 5, scoring = 'neg_root_mean_squared_error')
+avg_mse_elastic = -cv_elastic.mean()
+
+```
+
+
+```{python}
+test_data = pd.read_csv("C:/Users/Eddie/Documents/GSB 544/Data/test_new.csv")
+```
+
+```{python}
+final_model_fit = elastic_pipeline.fit(X,y)
+```
+
+```{python}
+final_predictions = pd.DataFrame(
+    {"PID": test_data['PID'],
+    "SalePrice": final_model_fit.predict(test_data)}
+)
+
+final_predictions["SalePrice"] = np.expm1(final_predictions["SalePrice"])
+
+```
+
+```{python}
+# joining predictions with test data to get year variable for plots
+plot_data_test = final_predictions.merge(test_data, on=["PID"])
+```
+
+# Comparing Training Data Metrics to Testing Metrics
+
+
+## Column {width = 35%}
+
+```{python}
+#| title: Plot of Sales Over Time (Training Data)
+(ggplot(da,
+aes(
+    x = 'Year Built',
+    y = 'SalePrice'
+    ))
+    + geom_jitter(alpha = 0.9, color = "grey")
+    + scale_y_log10()
+    + geom_smooth(method = "lm", se = False, color = "green")
+    + labs(
+        x = 'Age of Home',
+        y = 'Sale Price ($)')
+    + theme_bw()
+    )
+
+```
+
+```{python}
+#| title: Cross-Validated Root Mean Square Error (Train)
+#| height: 20%
+print(round(avg_mse_elastic,4))
+```
+
+## Column {width = 35%}
+```{python}
+#| title: Plot of Sales Over Time (Predictions With New Data)
+(ggplot(plot_data_test,
+aes(
+    x = 'Year Built',
+    y = 'SalePrice'
+    ))
+    + geom_point(alpha = 0.6, color = "grey")
+    + scale_y_log10()
+    + geom_smooth(method = "lm", se = False, color = "red")
+    + labs(
+        x = 'Age of Home',
+        y = 'Sale Price ($)')
+    + theme_bw()
+    )
+```
+
+```{python}
+#| title: Actual Root Mean Square Error (Test)
+#| height: 20%
+print(0.1428)
+```
+
+## Column {width = 30%}
+```{python}
+#| title: Summary Statistics for Training Data
+#| height: 40%
+description = da["SalePrice"].describe()
+des_table = description.to_frame()
+des_table
+```
+```{python}
+#| title: Summary Statistics for Predictions
+#| height: 40%
+description = plot_data_test["SalePrice"].describe()
+des_table = description.to_frame()
+des_table
+```
+
